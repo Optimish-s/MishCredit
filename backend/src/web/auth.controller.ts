@@ -45,3 +45,4 @@ export class AuthController {
     return { ok: true, message: 'se envio un correo temporal' };
   }
 }
+

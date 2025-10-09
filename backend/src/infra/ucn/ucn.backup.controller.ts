@@ -17,11 +17,11 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import type { Course } from '../../../domain/entities/course.entity';
-import type { AvanceItem } from '../../../domain/entities/avance.entity';
-import { MallaBackupRepository } from '../../db/bkp/malla-backup.repository';
-import { AvanceBackupRepository } from '../../db/bkp/avance-backup.repository';
-import { AdminKeyGuard } from '../admin-key.guard';
+import type { Course } from '../../domain/entities/course.entity';
+import type { AvanceItem } from '../../domain/entities/avance.entity';
+import { MallaBackupRepository } from '../db/malla-backup.repository';
+import { AvanceBackupRepository } from '../db/avance-backup.repository';
+import { AdminKeyGuard } from './admin-key.guard';
 
 class MallaItemDto {
   @IsString() @IsNotEmpty() codigo!: string;

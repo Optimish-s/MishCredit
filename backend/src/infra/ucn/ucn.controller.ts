@@ -3,9 +3,22 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AvanceGateway, LoginGateway, MallasGateway } from './ucn.gateways';
-import { LoginDto, MallaParamsDto, AvanceQueryDto } from './dto/ucn.dto';
 
- 
+class LoginDto {
+  @IsString() @IsNotEmpty() email!: string;
+  @IsString() @IsNotEmpty() password!: string;
+}
+
+class MallaParamsDto {
+  @IsString() @IsNotEmpty() cod!: string;
+  @IsString() @IsNotEmpty() catalogo!: string;
+}
+
+class AvanceQueryDto {
+  @IsString() @IsNotEmpty() rut!: string;
+  @IsString() @IsNotEmpty() codcarrera!: string;
+}
+
 @ApiTags('ucn')
 @Controller('ucn')
 export class UcnController {

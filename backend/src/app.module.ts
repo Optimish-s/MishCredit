@@ -9,8 +9,7 @@ import { UcnModule } from './infra/ucn/ucn.module';
 import { OffersModule } from './offers/offers.module';
 import { ProjectionsModule } from './projections/projections.module';
 import { HealthController } from './web/health.controller';
-import { AuthController } from './web/auth/auth.controller';
- 
+import { AuthController } from './web/auth.controller';
 
 @Module({
   imports: [

@@ -2,7 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import type { AvanceItem } from '../../../domain/entities/avance.entity';
+import type { AvanceItem } from '../../domain/entities/avance.entity';
 import { AvanceBackup, AvanceBackupDocument } from './avance-backup.schema';
 
 @Injectable()

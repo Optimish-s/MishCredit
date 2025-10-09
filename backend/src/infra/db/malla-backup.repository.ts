@@ -2,7 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import type { Course } from '../../../domain/entities/course.entity';
+import type { Course } from '../../domain/entities/course.entity';
 import { MallaBackup, MallaBackupDocument } from './malla-backup.schema';
 
 @Injectable()

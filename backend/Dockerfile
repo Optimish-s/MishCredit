@@ -14,7 +14,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
-COPY *.env.docker ./
+# Do not copy .env into the image (avoid baking secrets). Pass it at runtime:
+# docker run --env-file .env your-image
+# or use docker-compose env_file.
+# (No COPY .env ./ here)
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
 

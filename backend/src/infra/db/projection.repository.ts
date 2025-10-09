@@ -12,7 +12,7 @@ import {
   type PipelineStage,
   type UpdateResult,
 } from 'mongoose';
-import { Projection, ProjectionDocument } from './projection.schema'
+import { Projection, ProjectionDocument } from './projection.schema';
 
 @Injectable()
 export class ProjectionRepository {

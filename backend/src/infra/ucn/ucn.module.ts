@@ -4,14 +4,13 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UcnController } from './ucn.controller';
 import { AvanceGateway, LoginGateway, MallasGateway } from './ucn.gateways';
- 
+import { UcnBackupController } from './ucn.backup.controller';
 import { AdminKeyGuard } from './admin-key.guard';
-import { UcnBackupController } from './bkp/ucn.backup.controller';
-import { AvanceBackupRepository } from '../db/bkp/avance-backup.repository';
-import { AvanceBackup, AvanceBackupSchema } from '../db/bkp/avance-backup.schema';
-import { MallaBackupRepository } from '../db/bkp/malla-backup.repository';
-import { MallaBackup, MallaBackupSchema } from '../db/bkp/malla-backup.schema';
- 
+import { MallaBackup, MallaBackupSchema } from '../db/malla-backup.schema';
+import { AvanceBackup, AvanceBackupSchema } from '../db/avance-backup.schema';
+import { MallaBackupRepository } from '../db/malla-backup.repository';
+import { AvanceBackupRepository } from '../db/avance-backup.repository';
+
 @Module({
   imports: [
     HttpModule,

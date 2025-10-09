@@ -5,9 +5,8 @@ import { HttpService } from '@nestjs/axios';
 import { HttpException, Injectable } from '@nestjs/common';
 import type { AxiosError, AxiosResponse } from 'axios';
 import { firstValueFrom, type Observable } from 'rxjs';
-import { AvanceBackupRepository } from '../db/bkp/avance-backup.repository';
-import { MallaBackupRepository } from '../db/bkp/malla-backup.repository';
- 
+import { MallaBackupRepository } from '../db/malla-backup.repository';
+import { AvanceBackupRepository } from '../db/avance-backup.repository';
 
 // bandera para usar datos de prueba locales
 const useStubs: boolean = process.env.USE_STUBS === 'true';

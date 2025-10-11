@@ -17,8 +17,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import type { Course } from '../domain/course.entity';
-import type { AvanceItem } from '../domain/avance.entity';
+import type { Course } from '../projection/entities/course.entity';
+import type { AvanceItem } from '../avance/entities/avance.entity';
  
 import { AdminKeyGuard } from './admin-key.guard';
 import { AvanceBackupRepository } from 'src/db/bkp/avance-backup.repository';

@@ -1,6 +1,6 @@
 // tests basicos para schedule service sin acentos ni punto final
 
-import { OfferSlot } from "src/domain/offer.entity";
+import { OfferSlot } from "src/offers/entities/offer.entity";
 import { ScheduleService } from "./schedule.service";
  
  

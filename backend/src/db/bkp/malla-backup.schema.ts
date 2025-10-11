@@ -1,7 +1,7 @@
 // schema de respaldo de malla sin acentos ni punto final
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { Course } from 'src/domain/course.entity';
+import { Course } from 'src/projection/entities/course.entity';
  
 
 @Schema({ timestamps: true })

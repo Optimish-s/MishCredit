@@ -1,6 +1,6 @@
 // util de horarios y choques sin acentos ni punto final
 
-import { OfferSlot } from "src/domain/offer.entity";
+import { OfferSlot } from "src/offers/entities/offer.entity";
 
  
  

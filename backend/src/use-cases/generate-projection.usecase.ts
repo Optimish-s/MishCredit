@@ -1,11 +1,14 @@
 // caso de uso para generar proyeccion sin acentos ni punto final
-import { Injectable } from '@nestjs/common';
-import { AvanceItem } from 'src/domain/avance.entity';
-import { Course } from 'src/domain/course.entity';
+
+import { Injectable } from "@nestjs/common";
+import { AvanceService } from "src/avance/avance.service";
+import { AvanceItem } from "src/avance/entities/avance.entity";
+import { MallaService } from "src/malla/malla.service";
+import { Course } from "src/projection/entities/course.entity";
+import { ProjectionResult } from "src/projection/entities/projection.entity";
+import { ProjectionService } from "src/projection/projection.service";
+
  
- import { ProjectionResult } from 'src/domain/projection.entity';
-import { ProjectionService } from 'src/projection/projection.service';
-import { MallasGateway, AvanceGateway } from 'src/ucn/ucn.gateways';
 
 // helpers seguros para parsear unknown y evitar no-base-to-string
 function s(v: unknown): string {
@@ -63,8 +66,8 @@ function parseAvance(data: unknown): AvanceItem[] {
 @Injectable()
 export class GenerateProjectionUseCase {
   constructor(
-    private readonly mallasGw: MallasGateway,
-    private readonly avanceGw: AvanceGateway,
+    private readonly mallaService: MallaService,
+    private readonly AvanceService: AvanceService,
   ) {}
 
   async exec(params: {
@@ -75,11 +78,11 @@ export class GenerateProjectionUseCase {
     nivelObjetivo?: number;
     prioritarios?: string[];
   }): Promise<ProjectionResult> {
-    const mallaRaw = await this.mallasGw.malla(
+    const mallaRaw = await this.mallaService.getMalla(
       params.codCarrera,
       params.catalogo,
     );
-    const avanceRaw = await this.avanceGw.avance(params.rut, params.codCarrera);
+    const avanceRaw = await this.AvanceService.getAvance(params.rut, params.codCarrera);
 
     const malla = parseMalla(mallaRaw);
     const avance = parseAvance(avanceRaw);

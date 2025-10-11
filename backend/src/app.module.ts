@@ -11,6 +11,8 @@ import { HealthController } from './health/health.controller';
 import { AuthController } from './auth/auth.controller';
 import { UcnModule } from './ucn/ucn.module';
 import { AuthService } from './auth/auth.service';
+import { MallaModule } from './malla/malla.module';
+import { AvanceModule } from './avance/avance.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { AuthService } from './auth/auth.service';
     UcnModule,
     OffersModule,
     ProjectionsModule,
+    MallaModule,
+    AvanceModule,
   ],
   controllers: [HealthController, AuthController],
   providers: [AuthService],

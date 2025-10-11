@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { GenerateProjectionUseCase } from './generate-projection.usecase';
 import { ScheduleService } from 'src/schedule/schedule.service';
 import { OfferRepository } from 'src/db/offer.repository';
-import { OfferParallel } from 'src/domain/offer.entity';
+import { OfferParallel } from 'src/offers/entities/offer.entity';
 
 @Injectable()
 export class GenerateProjectionWithOfferUseCase {

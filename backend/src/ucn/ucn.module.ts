@@ -10,6 +10,9 @@ import { AvanceBackupRepository } from 'src/db/bkp/avance-backup.repository';
 import { AvanceBackup, AvanceBackupSchema } from 'src/db/bkp/avance-backup.schema';
 import { MallaBackupRepository } from 'src/db/bkp/malla-backup.repository';
 import { MallaBackup, MallaBackupSchema } from 'src/db/bkp/malla-backup.schema';
+import { MallaService } from 'src/malla/malla.service';
+import { MallaModule } from 'src/malla/malla.module';
+import { AvanceModule } from 'src/avance/avance.module';
 
 
 @Module({
@@ -19,6 +22,8 @@ import { MallaBackup, MallaBackupSchema } from 'src/db/bkp/malla-backup.schema';
       { name: MallaBackup.name, schema: MallaBackupSchema },
       { name: AvanceBackup.name, schema: AvanceBackupSchema },
     ]),
+    MallaModule,
+    AvanceModule,
   ],
   controllers: [UcnController, UcnBackupController],
   providers: [
@@ -28,6 +33,7 @@ import { MallaBackup, MallaBackupSchema } from 'src/db/bkp/malla-backup.schema';
     AdminKeyGuard,
     MallaBackupRepository,
     AvanceBackupRepository,
+   
   ],
   exports: [
     LoginGateway,

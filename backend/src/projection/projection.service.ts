@@ -1,7 +1,7 @@
 // servicio de dominio que selecciona cursos segun reglas sin acentos ni punto final
-import type { AvanceItem } from '../domain/avance.entity';
-import type { Course } from '../domain/course.entity';
-import { ProjectionInput, ProjectionResult, ProjectionCourse } from '../domain/projection.entity';
+import type { AvanceItem } from '../avance/entities/avance.entity';
+import type { Course } from './entities/course.entity';
+import { ProjectionInput, ProjectionResult, ProjectionCourse } from './entities/projection.entity';
 
 
 

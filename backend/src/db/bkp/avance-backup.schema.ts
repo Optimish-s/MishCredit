@@ -1,7 +1,7 @@
 // schema de respaldo de avance sin acentos ni punto final
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { AvanceItem } from 'src/domain/avance.entity';
+import { AvanceItem } from 'src/avance/entities/avance.entity';
  
 
 @Schema({ timestamps: true })

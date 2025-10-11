@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
  
 import { MallaBackup, MallaBackupDocument } from './malla-backup.schema';
-import { Course } from 'src/domain/course.entity';
+import { Course } from 'src/projection/entities/course.entity';
 
 @Injectable()
 export class MallaBackupRepository {

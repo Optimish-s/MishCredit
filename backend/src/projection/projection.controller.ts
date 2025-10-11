@@ -21,7 +21,7 @@ import {
 } from 'class-validator';
 
  
-import { GenerarProyeccionDto, GenerarConOfertaDto, GuardarProyeccionDto, FavoritaDto } from './projection.dto';
+import { GenerarProyeccionDto, GenerarConOfertaDto, GuardarProyeccionDto, FavoritaDto } from './dto/projection.dto';
 import { ProjectionRepository } from 'src/db/projection.repository';
 import { GenerateProjectionOptionsUseCase } from 'src/use-cases/generate-projection-options.usecase';
 import { GenerateProjectionWithOfferUseCase } from 'src/use-cases/generate-projection-with-offer.usecase';

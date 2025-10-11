@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
  
 import { AvanceBackup, AvanceBackupDocument } from './avance-backup.schema';
-import { AvanceItem } from 'src/domain/avance.entity';
+import { AvanceItem } from 'src/avance/entities/avance.entity';
 
 @Injectable()
 export class AvanceBackupRepository {

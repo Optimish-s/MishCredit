@@ -1,5 +1,5 @@
-import { AvanceItem } from "src/domain/avance.entity";
-import { Course } from "src/domain/course.entity";
+import { AvanceItem } from "src/avance/entities/avance.entity";
+import { Course } from "src/projection/entities/course.entity";
 
 export interface ProjectionInput {
   malla: Course[];

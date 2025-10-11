@@ -16,7 +16,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-import type { OfferParallel } from '../domain/offer.entity';
+import type { OfferParallel } from './entities/offer.entity';
  
 import { AdminKeyGuard } from 'src/ucn/admin-key.guard';
 import { OfferRepository } from 'src/db/offer.repository';

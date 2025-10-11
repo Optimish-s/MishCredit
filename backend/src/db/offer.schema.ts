@@ -1,7 +1,7 @@
 // schema de oferta en mongo sin acentos ni punto final
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { OfferSlot } from 'src/domain/offer.entity';
+import { OfferSlot } from 'src/offers/entities/offer.entity';
  
 const OfferSlotSchema = new MongooseSchema<OfferSlot>(
   {

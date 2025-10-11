@@ -2,7 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { type Model } from 'mongoose';
-import { OfferParallel, OfferSlot } from 'src/domain/offer.entity';
+import { OfferParallel, OfferSlot } from 'src/offers/entities/offer.entity';
 import { Offer, OfferDocument } from './offer.schema';
  
  

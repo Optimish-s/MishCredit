@@ -1,15 +1,16 @@
 // genera varias opciones de proyeccion variando la seleccion base sin acentos ni punto final
 import { Injectable } from '@nestjs/common';
-
- import { ProjectionResult } from 'src/domain/projection.entity';
+import { AvanceService } from 'src/avance/avance.service';
+import { MallaService } from 'src/malla/malla.service';
+import { ProjectionResult } from 'src/projection/entities/projection.entity';
 import { ProjectionService } from 'src/projection/projection.service';
-import { MallasGateway, AvanceGateway } from 'src/ucn/ucn.gateways';
 
+ 
 @Injectable()
 export class GenerateProjectionOptionsUseCase {
   constructor(
-    private readonly mallasGw: MallasGateway,
-    private readonly avanceGw: AvanceGateway,
+    private readonly mallaService: MallaService,
+    private readonly avanceService: AvanceService,
   ) {}
 
   async exec(params: {
@@ -21,8 +22,8 @@ export class GenerateProjectionOptionsUseCase {
     prioritarios?: string[];
     maxOptions?: number;
   }): Promise<{ opciones: ProjectionResult[] }> {
-    const mallaRaw = await this.mallasGw.malla(params.codCarrera, params.catalogo);
-    const avanceRaw = await this.avanceGw.avance(params.rut, params.codCarrera);
+    const mallaRaw = await this.mallaService.getMalla(params.codCarrera, params.catalogo);
+    const avanceRaw = await this.avanceService.getAvance(params.rut, params.codCarrera);
 
     // parse functions from generate-projection.usecase
     const s = (v: unknown) => (typeof v === 'string' ? v : String(v ?? ''));

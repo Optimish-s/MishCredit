@@ -10,6 +10,9 @@ import { GenerateProjectionWithOfferUseCase } from 'src/use-cases/generate-proje
 import { GenerateProjectionUseCase } from 'src/use-cases/generate-projection.usecase';
 import { ProjectionRepository } from 'src/db/projection.repository';
 import { Projection, ProjectionSchema } from 'src/db/projection.schema';
+import { MallaModule } from 'src/malla/malla.module';
+import { AvanceService } from 'src/avance/avance.service';
+import { HttpModule, HttpService } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -18,9 +21,13 @@ import { Projection, ProjectionSchema } from 'src/db/projection.schema';
     MongooseModule.forFeature([
       { name: Projection.name, schema: ProjectionSchema },
     ]),
+    MallaModule,
+    HttpModule,
   ],
   controllers: [ProjectionsController],
   providers: [
+    
+    AvanceService,
     ProjectionRepository,
     GenerateProjectionUseCase,
     GenerateProjectionWithOfferUseCase,

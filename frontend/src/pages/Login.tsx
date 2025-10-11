@@ -9,7 +9,7 @@ type Carrera = { codigo: string; nombre: string; catalogo: string };
 export default function Login() {
   const toast = useToast();
   const nav = useNavigate();
-  const [rutInput, setRutInput] = useState('');
+  const [emailInput, setEmailInput] = useState('');
   const [password, setPassword] = useState('');
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
@@ -24,8 +24,9 @@ export default function Login() {
     try {
       const res = await api<{ rut: string; carreras: Carrera[] }>(`/auth/login`, {
         method: 'POST',
-        body: JSON.stringify({ rut: rutInput, password }),
+        body: JSON.stringify({ email: emailInput, password }),
       });
+
       setRut(res.rut);
       setCarreras(res.carreras);
       if (res.carreras[0]) setSeleccion({ codCarrera: res.carreras[0].codigo, catalogo: res.carreras[0].catalogo });
@@ -45,8 +46,8 @@ export default function Login() {
       <h1 className="text-xl font-semibold mb-4">Login UCN</h1>
       <form className="space-y-3" onSubmit={onSubmit}>
         <div>
-          <label className="label">RUT</label>
-          <input className="input" value={rutInput} onChange={(e) => setRutInput(e.target.value)} placeholder="333333333" />
+          <label className="label">Email</label>
+          <input className="input" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} placeholder="ximena@example.com" />
         </div>
         <div>
           <label className="label">Password</label>
@@ -68,7 +69,7 @@ export default function Login() {
               className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200"
               onClick={async () => {
                 try {
-                  await api(`/auth/forgot`, { method: 'POST', body: JSON.stringify({ rut: rutInput, email: forgotEmail }) });
+                  await api(`/auth/forgot`, { method: 'POST', body: JSON.stringify({ rut: emailInput, email: forgotEmail }) });
                   toast({ type: 'success', message: 'Se envió una contraseña temporal al correo registrado' });
                 } catch (e) {
                   toast({ type: 'error', message: (e as Error).message || 'Datos no coinciden' });

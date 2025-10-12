@@ -1,5 +1,6 @@
 // genera varias opciones de proyeccion variando la seleccion base sin acentos ni punto final
 import { Injectable } from '@nestjs/common';
+import { PartialType } from '@nestjs/swagger';
 import { AvanceService } from 'src/avance/avance.service';
 import { MallaService } from 'src/malla/malla.service';
 import { ProjectionResult } from 'src/projection/entities/projection.entity';
@@ -18,8 +19,8 @@ export class GenerateProjectionOptionsUseCase {
     codCarrera: string;
     catalogo: string;
     topeCreditos: number;
-    nivelObjetivo?: number;
     prioritarios?: string[];
+    nivelObjetivo?: number;
     maxOptions?: number;
   }): Promise<{ opciones: ProjectionResult[] }> {
     const mallaRaw = await this.mallaService.getMalla(params.codCarrera, params.catalogo);

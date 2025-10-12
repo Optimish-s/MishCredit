@@ -23,9 +23,9 @@ import {
  
 import { GenerarProyeccionDto, GenerarConOfertaDto, GuardarProyeccionDto, FavoritaDto } from './dto/projection.dto';
 import { ProjectionRepository } from 'src/db/projection.repository';
-import { GenerateProjectionOptionsUseCase } from 'src/use-cases/generate-projection-options.usecase';
-import { GenerateProjectionWithOfferUseCase } from 'src/use-cases/generate-projection-with-offer.usecase';
-import { GenerateProjectionUseCase } from 'src/use-cases/generate-projection.usecase';
+import { GenerateProjectionOptionsUseCase } from 'src/projection/use-cases/generate-projection-options.usecase';
+import { GenerateProjectionWithOfferUseCase } from 'src/projection/use-cases/generate-projection-with-offer.usecase';
+import { GenerateProjectionUseCase } from 'src/projection/use-cases/generate-projection.usecase';
 
 
 

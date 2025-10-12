@@ -8,7 +8,7 @@ import { Course } from "src/projection/entities/course.entity";
 import { ProjectionResult } from "src/projection/entities/projection.entity";
 import { ProjectionService } from "src/projection/projection.service";
 
- 
+
 
 // helpers seguros para parsear unknown y evitar no-base-to-string
 function s(v: unknown): string {
@@ -62,21 +62,21 @@ function parseAvance(data: unknown): AvanceItem[] {
     };
   });
 }
-
+ 
 @Injectable()
 export class GenerateProjectionUseCase {
   constructor(
     private readonly mallaService: MallaService,
     private readonly AvanceService: AvanceService,
-  ) {}
+  ) { }
 
   async exec(params: {
     rut: string;
     codCarrera: string;
     catalogo: string;
     topeCreditos: number;
-    nivelObjetivo?: number;
     prioritarios?: string[];
+    nivelObjetivo?: number;
   }): Promise<ProjectionResult> {
     const mallaRaw = await this.mallaService.getMalla(
       params.codCarrera,

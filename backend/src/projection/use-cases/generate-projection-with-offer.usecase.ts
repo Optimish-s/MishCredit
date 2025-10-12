@@ -18,9 +18,9 @@ export class GenerateProjectionWithOfferUseCase {
     codCarrera: string;
     catalogo: string;
     topeCreditos: number;
+    prioritarios?: string[];
     period: string;
     nivelObjetivo?: number;
-    prioritarios?: string[];
   }) {
     const baseProj = await this.base.exec({
       rut: params.rut,

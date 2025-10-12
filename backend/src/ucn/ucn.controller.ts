@@ -1,9 +1,7 @@
 // controller web que expone los proxies seguros
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AvanceGateway, LoginGateway, MallasGateway } from './ucn.gateways';
-import { LoginDto, MallaParamsDto, AvanceQueryDto } from './dto/ucn.dto';
+import { MallaParamsDto, AvanceQueryDto } from './dto/ucn.dto';
 import { MallaService } from 'src/malla/malla.service';
 import { AvanceService } from 'src/avance/avance.service';
 
@@ -12,12 +10,12 @@ import { AvanceService } from 'src/avance/avance.service';
 @Controller('ucn')
 export class UcnController {
   constructor(
- 
+
     private readonly mallaService: MallaService,
     private readonly avanceService: AvanceService,
-  ) {}
+  ) { }
 
- 
+
   @Get('malla/:cod/:catalogo')
   @ApiOperation({ summary: 'Obtener malla' })
   @ApiResponse({ status: 200 })

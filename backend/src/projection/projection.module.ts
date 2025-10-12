@@ -13,6 +13,8 @@ import { Projection, ProjectionSchema } from 'src/db/projection.schema';
 import { MallaModule } from 'src/malla/malla.module';
 import { AvanceService } from 'src/avance/avance.service';
 import { HttpModule, HttpService } from '@nestjs/axios';
+import { ProjectionService } from './projection.service';
+import { AvanceModule } from 'src/avance/avance.module';
 
 @Module({
   imports: [
@@ -23,11 +25,13 @@ import { HttpModule, HttpService } from '@nestjs/axios';
     ]),
     MallaModule,
     HttpModule,
+    AvanceModule,
   ],
   controllers: [ProjectionsController],
   providers: [
     
     AvanceService,
+    ProjectionService,
     ProjectionRepository,
     GenerateProjectionUseCase,
     GenerateProjectionWithOfferUseCase,

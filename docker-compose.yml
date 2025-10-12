@@ -18,17 +18,17 @@ services:
       - mongo
     networks:
       - mishcredit_net
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #   env_file:
-  #     - ./frontend/.env
-  #   ports:
-  #     - "8080:80"
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - mishcredit_net
+  frontend:
+    build:
+      context: ./frontend
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - mishcredit_net
 volumes:
   mongo_data: {}
 

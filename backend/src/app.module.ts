@@ -5,11 +5,14 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { validateEnvConfig } from './config/env.validation';
-import { UcnModule } from './infra/ucn/ucn.module';
-import { OffersModule } from './offers/offers.module';
-import { ProjectionsModule } from './projections/projections.module';
-import { HealthController } from './web/health.controller';
-import { AuthController } from './web/auth.controller';
+ import { OffersModule } from './offers/offers.module';
+import { ProjectionsModule } from './projection/projection.module';
+import { HealthController } from './health/health.controller';
+import { AuthController } from './auth/auth.controller';
+import { UcnModule } from './ucn/ucn.module';
+import { AuthService } from './auth/auth.service';
+import { MallaModule } from './malla/malla.module';
+import { AvanceModule } from './avance/avance.module';
 
 @Module({
   imports: [
@@ -22,7 +25,10 @@ import { AuthController } from './web/auth.controller';
     UcnModule,
     OffersModule,
     ProjectionsModule,
+    MallaModule,
+    AvanceModule,
   ],
   controllers: [HealthController, AuthController],
+  providers: [AuthService],
 })
 export class AppModule {}

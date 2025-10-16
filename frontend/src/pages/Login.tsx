@@ -1,19 +1,22 @@
 import { FormEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useApp } from '../store/appStore';
 import { useToast } from '../components/Toast';
-import { useNavigate } from 'react-router-dom';
+import { Alert } from '../components/ui/Alert';
+import { Button } from '../components/ui/Button';
+import { Card, CardContent, CardHeader } from '../components/ui/Card';
+import { Input } from '../components/ui/Input';
 
 type Carrera = { codigo: string; nombre: string; catalogo: string };
 
 export default function Login() {
   const toast = useToast();
-  const nav = useNavigate();
-  const [emailInput, setEmailInput] = useState('');
+  const navigate = useNavigate();
+  const { setRut, setCarreras, setSeleccion } = useApp();
+
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [forgotOpen, setForgotOpen] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState('');
-  const { rut, setRut, carreras, setCarreras, seleccion, setSeleccion } = useApp();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,18 +25,19 @@ export default function Login() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api<{ rut: string; carreras: Carrera[] }>(`/auth/login`, {
+      const res = await api<{ rut: string; carreras: Carrera[] }>('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email: emailInput, password }),
+        body: JSON.stringify({ email, password }),
       });
-
       setRut(res.rut);
       setCarreras(res.carreras);
-      if (res.carreras[0]) setSeleccion({ codCarrera: res.carreras[0].codigo, catalogo: res.carreras[0].catalogo });
-      toast({ type: 'success', message: 'Login exitoso' });
-      nav('/plan');
-    } catch (e) {
-      const msg = (e as Error).message || 'Error de login';
+      if (res.carreras[0]) {
+        setSeleccion({ codCarrera: res.carreras[0].codigo, catalogo: res.carreras[0].catalogo });
+      }
+      toast({ type: 'success', message: 'Bienvenido a Planificador UCN Optimish' });
+      navigate('/avance');
+    } catch (err) {
+      const msg = (err as Error).message || 'No pudimos iniciar sesion';
       setError(msg);
       toast({ type: 'error', message: msg });
     } finally {
@@ -42,74 +46,71 @@ export default function Login() {
   }
 
   return (
-    <div className="card max-w-xl mx-auto">
-      <h1 className="text-xl font-semibold mb-4">Login UCN</h1>
-      <form className="space-y-3" onSubmit={onSubmit}>
-        <div>
-          <label className="label">Email</label>
-          <input className="input" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} placeholder="ximena@example.com" />
+    <div className="min-h-screen bg-gradient-to-b from-teal-900 to-teal-700 px-6 py-12 text-slate-100">
+      <main className="mx-auto flex max-w-2xl flex-col gap-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-extrabold">Bienvenido a Planificador UCN Optimish</h1>
+          <p className="mt-2 text-sm text-slate-200/90">
+            Ingresa tus credenciales de Online UCN para continuar.
+          </p>
         </div>
-        <div>
-          <label className="label">Password</label>
-          <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </div>
-        <button className="btn" disabled={loading}>{loading ? 'Ingresando...' : 'Ingresar'}</button>
-      </form>
-      <div className="mt-3 text-sm">
-        <button className="text-blue-700 hover:underline" onClick={() => setForgotOpen((v) => !v)}>
-          Olvidé mi contraseña
-        </button>
-        {forgotOpen && (
-          <div className="mt-2 space-y-2">
-            <div>
-              <label className="label">Email asociado</label>
-              <input className="input" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} placeholder="juan@example.com" />
-            </div>
-            <button
-              className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200"
-              onClick={async () => {
-                try {
-                  await api(`/auth/forgot`, { method: 'POST', body: JSON.stringify({ rut: emailInput, email: forgotEmail }) });
-                  toast({ type: 'success', message: 'Se envió una contraseña temporal al correo registrado' });
-                } catch (e) {
-                  toast({ type: 'error', message: (e as Error).message || 'Datos no coinciden' });
-                }
-              }}
-            >
-              Enviar contraseña temporal
-            </button>
-          </div>
-        )}
-      </div>
-      <div className="mt-6 border-t pt-4 text-sm">
-        <div className="text-gray-600 mb-2">Acceso administrador</div>
-        <button className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200" onClick={() => nav('/admin')}>
-          Ingresar como admin
-        </button>
-      </div>
-      {rut && (
-        <div className="mt-4">
-          <div className="text-sm text-gray-600">RUT: {rut}</div>
-          <div className="mt-2">
-            <label className="label">Carrera y catálogo</label>
-            <select
-              className="input"
-              value={seleccion ? `${seleccion.codCarrera}-${seleccion.catalogo}` : ''}
-              onChange={(e) => {
-                const [codCarrera, catalogo] = e.target.value.split('-');
-                setSeleccion({ codCarrera, catalogo });
-              }}
-            >
-              {carreras.map((c) => (
-                <option key={`${c.codigo}-${c.catalogo}`} value={`${c.codigo}-${c.catalogo}`}>
-                  {c.nombre} ({c.codigo}-{c.catalogo})
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      )}
-      {error && <div className="text-red-600 mt-3">{error}</div>}
+
+        <Card className="border-white/10 bg-white/10 backdrop-blur">
+          <CardHeader
+            title="Inicio de sesion"
+            description="Tus datos permanecen en tu navegador. Para pruebas puedes usar las credenciales demo."
+          />
+          <CardContent>
+            <form className="space-y-4" onSubmit={onSubmit}>
+              <Input
+                label="Email"
+                type="email"
+                autoComplete="username"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="correo@ucn.cl"
+                required
+              />
+              <Input
+                label="Contrasena"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="********"
+                required
+              />
+              {error && <Alert variant="error" description={error} />}
+              <Button type="submit" isLoading={loading} className="w-full">
+                Iniciar sesion
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => navigate('/forgot')}
+                className="w-full text-sm"
+              >
+                Olvide mi contrasena
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-white/5 backdrop-blur">
+          <CardHeader title="Acceso administrador" description="Carga de oferta, respaldos y configuraciones avanzadas." />
+          <CardContent className="flex flex-col gap-3 text-sm text-slate-200/90">
+            <p>Debes ingresar la clave de administrador para acceder a herramientas avanzadas.</p>
+            <Button variant="secondary" onClick={() => navigate('/admin')} className="self-center">
+              Ir a administrador
+            </Button>
+          </CardContent>
+        </Card>
+
+        <footer className="text-center text-xs text-slate-200/70">
+          © 2025 Optimish — Proyecto academico UCN
+        </footer>
+      </main>
     </div>
   );
 }
+

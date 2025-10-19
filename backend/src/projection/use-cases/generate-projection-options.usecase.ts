@@ -6,7 +6,6 @@ import { MallaService } from 'src/malla/malla.service';
 import { ProjectionResult } from 'src/projection/entities/projection.entity';
 import { ProjectionService } from 'src/projection/projection.service';
 
- 
 @Injectable()
 export class GenerateProjectionOptionsUseCase {
   constructor(
@@ -23,8 +22,14 @@ export class GenerateProjectionOptionsUseCase {
     nivelObjetivo?: number;
     maxOptions?: number;
   }): Promise<{ opciones: ProjectionResult[] }> {
-    const mallaRaw = await this.mallaService.getMalla(params.codCarrera, params.catalogo);
-    const avanceRaw = await this.avanceService.getAvance(params.rut, params.codCarrera);
+    const mallaRaw = await this.mallaService.getMalla(
+      params.codCarrera,
+      params.catalogo,
+    );
+    const avanceRaw = await this.avanceService.getAvance(
+      params.rut,
+      params.codCarrera,
+    );
 
     // parse functions from generate-projection.usecase
     const s = (v: unknown) => (typeof v === 'string' ? v : String(v ?? ''));
@@ -77,4 +82,3 @@ export class GenerateProjectionOptionsUseCase {
     return { opciones };
   }
 }
-

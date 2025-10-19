@@ -70,7 +70,7 @@ export class AuthService {
 
     async login(email: string, password: string): Promise<LoginResponse> {
         if (useStubs) {
-            const user = demoUsers.find((u) => u.rut === email && u.password === password);
+            const user = demoUsers.find((u) => (u.email === email || u.rut === email) && u.password === password);
             if (!user) throw new BadRequestException('credenciales invalidas');
             return { rut: user.rut, carreras: user.carreras };
         }

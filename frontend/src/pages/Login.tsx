@@ -64,7 +64,7 @@ export default function Login() {
             <form className="space-y-4" onSubmit={onSubmit}>
               <Input
                 label="Email"
-                type="email"
+                // type="email"
                 autoComplete="username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

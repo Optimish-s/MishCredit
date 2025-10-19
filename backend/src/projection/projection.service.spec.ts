@@ -2,8 +2,6 @@
 
 import { ProjectionService } from "./projection.service";
 
- 
-
 describe('ProjectionService', () => {
   const malla = [
     { codigo: 'A', asignatura: 'A', creditos: 6, nivel: 1, prereq: '' },

@@ -60,26 +60,31 @@ export default function Demanda() {
         description="Observa la cantidad de estudiantes que han marcado cursos o NRC como favoritos."
       />
       <CardContent className="space-y-6">
-        <div className="grid gap-3 md:grid-cols-4">
-          <Input
-            label="Codigo de carrera (opcional)"
+        <div className="grid gap-3 md:grid-cols-3 items-end">
+          <div>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Codigo de carrera (opcional)</label>
+          <Input className="mt-1 h-10"
+          //  label="Codigo de carrera (opcional)"
             value={codCarrera}
             onChange={(e) => setCodCarrera(e.target.value)}
             placeholder="8606"
           />
-          <div>
+          </div>
+
+          <div className="h-full justify-between flex flex-col">
             <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Agrupar por</label>
             <select
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              className="mt-1 w-full h-10
+               rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               value={por}
               onChange={(e) => setPor(e.target.value as 'codigo' | 'nrc')}
             >
-              <option value="codigo">Codigo</option>
+              <option  value="codigo">Codigo</option>
               <option value="nrc">NRC</option>
             </select>
           </div>
           <div className="flex items-end">
-            <Button onClick={load}>Refrescar</Button>
+            <Button className="h-10" onClick={load}>Refrescar</Button>
           </div>
         </div>
 

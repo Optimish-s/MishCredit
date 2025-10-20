@@ -36,7 +36,9 @@ export default tseslint.config(
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
       'prettier/prettier': 'off',
-      'linebreak-style': 'off'
+      'linebreak-style': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
     },
   },
 );

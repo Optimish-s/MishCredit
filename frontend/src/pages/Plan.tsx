@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
 import { LoadingState } from '../components/ui/LoadingState';
 import { SortableItem } from '../components/ui/SortableItem';
+import { Card } from '../components/ui/Card';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
@@ -38,7 +39,6 @@ export default function Plan() {
   const toast = useToast();
   const { seleccion, tope, setTope } = useApp();
 
-  const [nivelObjetivo, setNivelObjetivo] = useState<number | ''>('');
   const [prioritarios, setPrioritarios] = useState<string[]>([]);
   const [malla, setMalla] = useState<Course[]>([]);
   const [filtroMalla, setFiltroMalla] = useState('');
@@ -185,8 +185,12 @@ export default function Plan() {
           codCarrera: seleccion.codCarrera,
           catalogo: seleccion.catalogo,
           topeCreditos: tope,
-          nivelObjetivo: typeof nivelObjetivo === 'number' ? nivelObjetivo : undefined,
           prioritarios,
+          maximizarCreditos,
+          // envío del orden de prioridades/etiquetas para que el backend pueda ordenar los cursos
+          ordenPrioridades: ordenEtiquetas,
+          // se incluye el flag por compatibilidad (opcional en backend)
+          priorizarReprobados,
         }),
       });
       setVariants([res]);
@@ -210,8 +214,11 @@ export default function Plan() {
           codCarrera: seleccion.codCarrera,
           catalogo: seleccion.catalogo,
           topeCreditos: tope,
-          nivelObjetivo: typeof nivelObjetivo === 'number' ? nivelObjetivo : undefined,
           prioritarios,
+          maximizarCreditos,
+          // enviar el orden de prioridades para que las opciones respeten la prioridad indicada
+          ordenPrioridades: ordenEtiquetas,
+          priorizarReprobados,
           maxOptions: 5,
         }),
       });
@@ -270,7 +277,7 @@ export default function Plan() {
             <div className="md:col-span-8">
               <div className="grid gap-3 md:grid-cols-8">
                 {/* Tope de créditos */}
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 col-span-2">
+                <Card className="p-4 col-span-2">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Tope de créditos
                   </div>
@@ -285,10 +292,10 @@ export default function Plan() {
                     />
                     <span className="text-sm text-slate-600 dark:text-slate-300">SCT</span>
                   </div>
-                </div>
+                </Card>
 
                 {/* Maximizar créditos */}
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 col-span-3">
+                <Card className="p-4 col-span-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -305,10 +312,10 @@ export default function Plan() {
                       className="h-5 w-5 accent-teal-600"
                     />
                   </div>
-                </div>
+                </Card>
 
                 {/* Priorizar reprobados */}
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 col-span-3">
+                <Card className="p-4 col-span-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -325,10 +332,10 @@ export default function Plan() {
                       className="h-5 w-5 accent-teal-600"
                     />
                   </div>
-                </div>
+                </Card>
 
-                {/* Prioritarios (usa 3 columnas dentro del area de parámetros) */}
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 col-span-8">
+                {/* Prioritarios (usa X columnas dentro del area de parámetros) */}
+                <Card className="p-4 col-span-8">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Prioritarios Personalizados
                   </div>
@@ -355,14 +362,14 @@ export default function Plan() {
                       ))}
                     </div>
                   )}
-                </div>
+                </Card>
               </div>
             </div>
 
             {/* Sidebar de etiquetas: aparece sólo si hay etiquetas extras */}
             {showSidebar && (
               <aside className="col-span-2">
-                <div className="h-full sticky top-6 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <Card className="h-full sticky top-6 p-3">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Ordenar Prioridades
                   </div>
@@ -377,36 +384,12 @@ export default function Plan() {
                     <SortableContext items={ordenEtiquetas} strategy={verticalListSortingStrategy}>
                       <div className="flex flex-col gap-2">
                         {ordenEtiquetas.map((etiqueta) => (
-                          <SortableItem key={etiqueta} id={etiqueta}>
-                            {/* single root element so SortableItem can attach listeners */}
-                            <span className="flex items-center gap-3 cursor-move select-none rounded px-2 py-1 text-xs font-semibold bg-teal-500/20 text-teal-700 hover:text-white hover:bg-teal-700 dark:text-teal-100 focus-visible:ring-teal-500 transition group">
-                              {/* grip / six dots */}
-                              <span className="flex h-4 w-4 flex-col items-center justify-center opacity-90">
-                                <svg
-                                  width="8"
-                                  height="12"
-                                  viewBox="0 0 8 12"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  aria-hidden="true"
-                                  className="text-teal-700 group-hover:text-teal-100 dark:text-teal-100 dark:group-hover:text-teal-100"
-                                >
-                                  <circle cx="2" cy="2" r="1" fill="currentColor" />
-                                  <circle cx="6" cy="2" r="1" fill="currentColor" />
-                                  <circle cx="2" cy="6" r="1" fill="currentColor" />
-                                  <circle cx="6" cy="6" r="1" fill="currentColor" />
-                                  <circle cx="2" cy="10" r="1" fill="currentColor" />
-                                  <circle cx="6" cy="10" r="1" fill="currentColor" />
-                                </svg>
-                              </span>
-                              <span className="truncate">{etiqueta}</span>
-                            </span>
-                          </SortableItem>
+                          <SortableItem key={etiqueta} id={etiqueta} label={etiqueta} className="group" />
                         ))}
                       </div>
                     </SortableContext>
                   </DndContext>
-                </div>
+                </Card>
               </aside>
             )}
           </section>

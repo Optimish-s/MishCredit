@@ -6,6 +6,10 @@ import { useToast } from '../components/Toast';
 import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
 import { LoadingState } from '../components/ui/LoadingState';
+import { SortableItem } from '../components/ui/SortableItem';
+import { DndContext, closestCenter } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 type ProjectionCourse = {
   codigo: string;
@@ -46,6 +50,9 @@ export default function Plan() {
   const [loading, setLoading] = useState(false);
   const [variants, setVariants] = useState<ProjectionResult[]>([]);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  const [maximizarCreditos, setMaximizarCreditos] = useState(false);
+  const [priorizarReprobados, setPriorizarReprobados] = useState(false);
 
   useEffect(() => {
     async function loadMalla() {
@@ -124,6 +131,46 @@ export default function Plan() {
     setPrioritarios([]);
     setPickerDraft({});
     toast({ type: 'info', message: 'Prioritarios limpiados' });
+  }
+
+  // etiquetas base y extras; por defecto mostrar las extras primero y las bases al final
+  const etiquetasBase = ['Nivel más bajo'];
+  const etiquetasExtras = [
+    ...(priorizarReprobados ? ['Reprobados'] : []),
+    ...(prioritarios.length > 0 ? ['Prioritarios'] : []),
+  ];
+
+  // lista completa: extras primero, luego las bases -> así las bases aparecen al final por defecto
+  const etiquetasVisibles = [...etiquetasExtras, ...etiquetasBase];
+
+  // inicializar con el orden por defecto (extras primero)
+  const [ordenEtiquetas, setOrdenEtiquetas] = useState<string[]>(() => etiquetasVisibles);
+
+  // Sincroniza ordenEtiquetas cuando cambian las opciones visibles.
+  // Mantiene el orden previo para las extras, elimina las que ya no aplican y añade nuevas;
+  useEffect(() => {
+    setOrdenEtiquetas((prev) => {
+      // mantener orden previo sólo para las etiquetas 'extras' que siguen presentes
+      const extrasPrev = prev.filter((t) => etiquetasExtras.includes(t) && etiquetasVisibles.includes(t));
+      const extrasToAdd = etiquetasExtras.filter((t) => !extrasPrev.includes(t));
+      const extrasOrdered = [...extrasPrev, ...extrasToAdd];
+
+      // bases presentes (se agregan siempre al final)
+      const basesPresent = etiquetasBase.filter((t) => etiquetasVisibles.includes(t));
+
+      return [...extrasOrdered, ...basesPresent];
+    });
+    // disparar cuando cambian las condiciones que definen extras/bases
+  }, [priorizarReprobados, prioritarios.length]);
+
+  function handleDragEnd(event: any) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setOrdenEtiquetas((items) => {
+      const oldIndex = items.indexOf(active.id);
+      const newIndex = items.indexOf(over.id);
+      return arrayMove(items, oldIndex, newIndex);
+    });
   }
 
   async function generar(e: FormEvent) {
@@ -210,78 +257,161 @@ export default function Plan() {
       <header>
         <h1 className="text-2xl font-bold">Crear proyeccion</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Define tus parametros, prioriza ramos y genera alternativas que respeten prerrequisitos y carga academica.
+          Define tus parametros, prioriza ramos y genera alternativas que respeten prerrequisitos y carga académica.
         </p>
       </header>
 
-      <section className="grid gap-3 md:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-          <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Tope de creditos
-          </div>
-          <div className="mt-2 flex items-center gap-2">
-            <input
-              type="number"
-              min={10}
-              max={30}
-              value={tope}
-              onChange={(e) => setTope(Number(e.target.value))}
-              className="w-24 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
-            />
-            <span className="text-sm text-slate-600 dark:text-slate-300">SCT</span>
-          </div>
-          <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-            Ajusta este valor segun tu carga maxima deseada.
-          </div>
-        </div>
+      {/* Contenedor principal: parámetros + sidebar condicional de etiquetas */}
+      {(() => {
+        const showSidebar = etiquetasExtras.length > 0;
+        return (
+          <section className={`grid gap-3 ${showSidebar ? 'md:grid-cols-10' : 'md:grid-cols-8'}`}>
+            {/* area de parámetros: mantiene la grid de x columnas internamente */}
+            <div className="md:col-span-8">
+              <div className="grid gap-3 md:grid-cols-8">
+                {/* Tope de créditos */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 col-span-2">
+                  <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Tope de créditos
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={10}
+                      max={30}
+                      value={tope}
+                      onChange={(e) => setTope(Number(e.target.value))}
+                      className="w-24 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                    />
+                    <span className="text-sm text-slate-600 dark:text-slate-300">SCT</span>
+                  </div>
+                </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-          <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Nivel objetivo (opcional)
-          </div>
-          <div className="mt-2 flex items-center gap-2">
-            <input
-              type="number"
-              min={1}
-              value={nivelObjetivo}
-              onChange={(e) => setNivelObjetivo(e.target.value ? Number(e.target.value) : '')}
-              className="w-24 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
-            />
-            <span className="text-xs text-slate-500 dark:text-slate-400">
-              Prioriza niveles inferiores a este numero.
-            </span>
-          </div>
-        </div>
+                {/* Maximizar créditos */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 col-span-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Maximizar créditos
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Intenta usar el máximo posible del tope definido.
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={maximizarCreditos}
+                      onChange={(e) => setMaximizarCreditos(e.target.checked)}
+                      className="h-5 w-5 accent-teal-600"
+                    />
+                  </div>
+                </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-          <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Prioritarios seleccionados
-          </div>
-            <div className="mt-2 flex items-center gap-2">
-              <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold text-teal-700 dark:bg-teal-500/20 dark:text-teal-100">
-                {prioritarios.length} cursos
-              </span>
-              <Button size="sm" variant="secondary" onClick={openPicker}>
-                {showPicker ? 'Cerrar selector' : 'Elegir ramos'}
-              </Button>
-              <Button size="sm" variant="ghost" onClick={resetPrioritarios}>
-                Limpiar
-              </Button>
-            </div>
-            {prioritarios.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {prioritarios.map((code) => (
-                  <span
-                    key={code}
-                    className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-100"
-                  >
-                    {code}
-                  </span>
-                ))}
+                {/* Priorizar reprobados */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 col-span-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Priorizar reprobados
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Da preferencia a cursos reprobados.
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={priorizarReprobados}
+                      onChange={(e) => setPriorizarReprobados(e.target.checked)}
+                      className="h-5 w-5 accent-teal-600"
+                    />
+                  </div>
+                </div>
+
+                {/* Prioritarios (usa 3 columnas dentro del area de parámetros) */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 col-span-8">
+                  <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Prioritarios Personalizados
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold text-teal-700 dark:bg-teal-500/20 dark:text-teal-100">
+                      {prioritarios.length} cursos
+                    </span>
+                    <Button size="sm" variant="secondary" onClick={openPicker}>
+                      {showPicker ? 'Cerrar selector' : 'Elegir ramos'}
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={resetPrioritarios}>
+                      Limpiar
+                    </Button>
+                  </div>
+                  {prioritarios.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {prioritarios.map((code) => (
+                        <span
+                          key={code}
+                          className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                        >
+                          {code}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
+            </div>
+
+            {/* Sidebar de etiquetas: aparece sólo si hay etiquetas extras */}
+            {showSidebar && (
+              <aside className="col-span-2">
+                <div className="h-full sticky top-6 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                  <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Ordenar Prioridades
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4">
+                    Elige el orden de las prioridades seleccionadas.
+                  </div>
+                  <DndContext
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                    modifiers={[restrictToVerticalAxis]}
+                  >
+                    <SortableContext items={ordenEtiquetas} strategy={verticalListSortingStrategy}>
+                      <div className="flex flex-col gap-2">
+                        {ordenEtiquetas.map((etiqueta) => (
+                          <SortableItem key={etiqueta} id={etiqueta}>
+                            {/* single root element so SortableItem can attach listeners */}
+                            <span className="flex items-center gap-3 cursor-move select-none rounded px-2 py-1 text-xs font-semibold bg-teal-500/20 text-teal-700 hover:text-white hover:bg-teal-700 dark:text-teal-100 focus-visible:ring-teal-500 transition group">
+                              {/* grip / six dots */}
+                              <span className="flex h-4 w-4 flex-col items-center justify-center opacity-90">
+                                <svg
+                                  width="8"
+                                  height="12"
+                                  viewBox="0 0 8 12"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  aria-hidden="true"
+                                  className="text-teal-700 group-hover:text-teal-100 dark:text-teal-100 dark:group-hover:text-teal-100"
+                                >
+                                  <circle cx="2" cy="2" r="1" fill="currentColor" />
+                                  <circle cx="6" cy="2" r="1" fill="currentColor" />
+                                  <circle cx="2" cy="6" r="1" fill="currentColor" />
+                                  <circle cx="6" cy="6" r="1" fill="currentColor" />
+                                  <circle cx="2" cy="10" r="1" fill="currentColor" />
+                                  <circle cx="6" cy="10" r="1" fill="currentColor" />
+                                </svg>
+                              </span>
+                              <span className="truncate">{etiqueta}</span>
+                            </span>
+                          </SortableItem>
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              </aside>
             )}
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {showPicker && (
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
@@ -411,13 +541,13 @@ export default function Plan() {
             title="Aun no generas una proyeccion"
             description="Configura los parametros iniciales y presiona Generar proyeccion para ver el resultado."
             actionLabel="Generar ahora"
-            onAction={() => document.querySelector<HTMLFormElement>('form')?.requestSubmit()}
+            onAction={() => document.querySelector<HTMLFormElement>('form')?.requestSubmit()} // ? esto no funciona
           />
         )
       )}
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
             <div>
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-100">
@@ -494,7 +624,7 @@ export default function Plan() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
-                        variant={isActive ? 'secondary' : 'ghost'}
+                        variant={isActive ? 'ghost' : 'secondary'}
                         size="sm"
                         onClick={() => setActiveIndex(idx)}
                       >

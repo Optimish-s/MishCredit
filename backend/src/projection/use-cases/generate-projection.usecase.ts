@@ -1,6 +1,6 @@
 // caso de uso para generar proyeccion sin acentos ni punto final
 
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { AvanceService } from "src/avance/avance.service";
 import { AvanceItem } from "src/avance/entities/avance.entity";
 import { MallaService } from "src/malla/malla.service";
@@ -70,6 +70,8 @@ export class GenerateProjectionUseCase {
     private readonly AvanceService: AvanceService,
   ) { }
 
+  private readonly logger = new Logger(GenerateProjectionUseCase.name);
+
   async exec(params: {
     rut: string;
     codCarrera: string;
@@ -78,6 +80,9 @@ export class GenerateProjectionUseCase {
     prioritarios?: string[];
     nivelObjetivo?: number;
   }): Promise<ProjectionResult> {
+
+    this.logger.log(`Iniciando proyección básica`);
+
     const mallaRaw = await this.mallaService.getMalla(
       params.codCarrera,
       params.catalogo,

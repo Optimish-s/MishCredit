@@ -1,5 +1,5 @@
 // caso de uso proyeccion con oferta eligiendo nrc sin choques sin acentos ni punto final
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
  
 import { GenerateProjectionUseCase } from './generate-projection.usecase';
 import { ScheduleService } from 'src/schedule/schedule.service';
@@ -13,6 +13,8 @@ export class GenerateProjectionWithOfferUseCase {
     private readonly offers: OfferRepository,
   ) {}
 
+  private readonly logger = new Logger(GenerateProjectionWithOfferUseCase.name);
+  
   async exec(params: {
     rut: string;
     codCarrera: string;
@@ -22,6 +24,7 @@ export class GenerateProjectionWithOfferUseCase {
     period: string;
     nivelObjetivo?: number;
   }) {
+    this.logger.log(`Iniciando proyección con ofertas u ramos elegidos`);
     const baseProj = await this.base.exec({
       rut: params.rut,
       codCarrera: params.codCarrera,

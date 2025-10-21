@@ -3,8 +3,6 @@ import type { AvanceItem } from '../avance/entities/avance.entity';
 import type { Course } from './entities/course.entity';
 import { ProjectionInput, ProjectionResult, ProjectionCourse } from './entities/projection.entity';
 
-
-
 export class ProjectionService {
   static buildOptions(
     input: ProjectionInput,

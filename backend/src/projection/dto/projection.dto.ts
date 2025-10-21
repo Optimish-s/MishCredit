@@ -10,13 +10,13 @@ export class GenerarProyeccionDto {
   @IsOptional() @Type(() => String) prioritarios?: string[];
 }
 
+export class GenerarConOfertaDto extends GenerarProyeccionDto {
+  @IsString() @IsNotEmpty() period!: string;
+}
+
 export class GuardarProyeccionDto extends GenerarProyeccionDto {
   @IsOptional() @IsString() nombre?: string;
   @IsOptional() @IsBoolean() favorite?: boolean;
-}
-
-export class GenerarConOfertaDto extends GenerarProyeccionDto {
-  @IsString() @IsNotEmpty() period!: string;
 }
 
 export class FavoritaDto {

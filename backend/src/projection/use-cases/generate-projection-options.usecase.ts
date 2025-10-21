@@ -1,5 +1,5 @@
 // genera varias opciones de proyeccion variando la seleccion base sin acentos ni punto final
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PartialType } from '@nestjs/swagger';
 import { AvanceService } from 'src/avance/avance.service';
 import { MallaService } from 'src/malla/malla.service';
@@ -13,6 +13,8 @@ export class GenerateProjectionOptionsUseCase {
     private readonly avanceService: AvanceService,
   ) {}
 
+  private readonly logger = new Logger(GenerateProjectionOptionsUseCase.name);
+
   async exec(params: {
     rut: string;
     codCarrera: string;
@@ -22,6 +24,9 @@ export class GenerateProjectionOptionsUseCase {
     nivelObjetivo?: number;
     maxOptions?: number;
   }): Promise<{ opciones: ProjectionResult[] }> {
+
+  this.logger.log(`Iniciando proyección con opciones`);
+    
     const mallaRaw = await this.mallaService.getMalla(
       params.codCarrera,
       params.catalogo,
@@ -32,6 +37,7 @@ export class GenerateProjectionOptionsUseCase {
     );
 
     // parse functions from generate-projection.usecase
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     const s = (v: unknown) => (typeof v === 'string' ? v : String(v ?? ''));
     const n = (v: unknown) => {
       const x = Number(v);

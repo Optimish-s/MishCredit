@@ -26,7 +26,7 @@ export function SortableItem({ id, children, label, className = '' }: SortableIt
   const DefaultTag = ({ text }: { text: string }) => (
     <span
       className={
-        `flex items-center gap-3 cursor-move select-none rounded px-2 py-1 text-xs font-semibold bg-teal-500/20 text-teal-700 hover:text-white hover:bg-teal-700 dark:text-teal-100 focus-visible:ring-teal-500 transition ` +
+        `flex items-center gap-3 cursor-move select-none rounded px-2 py-1 text-xs font-semibold bg-teal-500/20 text-teal-700 hover:text-white hover:bg-teal-700 dark:text-teal-100 focus-visible:ring-teal-500 transition group: ` +
         className
       }
     //   role="button"
@@ -41,7 +41,7 @@ export function SortableItem({ id, children, label, className = '' }: SortableIt
           viewBox="0 0 8 12"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="text-teal-700 dark:text-teal-100"
+          className="text-teal-700 dark:text-teal-100 group-hover:text-teal-100"
         >
           <circle cx="2" cy="2" r="1" fill="currentColor" />
           <circle cx="6" cy="2" r="1" fill="currentColor" />

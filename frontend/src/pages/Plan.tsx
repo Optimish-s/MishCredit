@@ -134,10 +134,10 @@ export default function Plan() {
   }
 
   // etiquetas base y extras; por defecto mostrar las extras primero y las bases al final
-  const etiquetasBase = ['Nivel más bajo'];
+  const etiquetasBase = ['NIVEL'];
   const etiquetasExtras = [
-    ...(priorizarReprobados ? ['Reprobados'] : []),
-    ...(prioritarios.length > 0 ? ['Prioritarios'] : []),
+    ...(priorizarReprobados ? ['REPROBADOS'] : []),
+    ...(prioritarios.length > 0 ? ['PRIORITARIOS'] : []),
   ];
 
   // lista completa: extras primero, luego las bases -> así las bases aparecen al final por defecto
@@ -187,10 +187,10 @@ export default function Plan() {
           topeCreditos: tope,
           prioritarios,
           maximizarCreditos,
-          // envío del orden de prioridades/etiquetas para que el backend pueda ordenar los cursos
-          ordenPrioridades: ordenEtiquetas,
           // se incluye el flag por compatibilidad (opcional en backend)
           priorizarReprobados,
+          // envío del orden de prioridades/etiquetas para que el backend pueda ordenar los cursos
+          ordenPrioridades: ordenEtiquetas,
         }),
       });
       setVariants([res]);
@@ -253,7 +253,7 @@ export default function Plan() {
     });
     toast({
       type: 'success',
-      message: favorite ? 'Guardada como favorita' : 'Proyeccion guardada',
+      message: favorite ? 'Proyección guardada como favorita' : 'Proyeccion guardada',
     });
   }
 

@@ -23,8 +23,8 @@ import {
  
 import { GenerarProyeccionDto, GenerarConOfertaDto, GuardarProyeccionDto, FavoritaDto } from './dto/projection.dto';
 import { ProjectionRepository } from 'src/db/projection.repository';
-import { GenerateProjectionOptionsUseCase } from 'src/projection/use-cases/generate-projection-options.usecase';
-import { GenerateProjectionWithOfferUseCase } from 'src/projection/use-cases/generate-projection-with-offer.usecase';
+// import { GenerateProjectionOptionsUseCase } from 'src/projection/use-cases/generate-projection-options.usecase';
+// import { GenerateProjectionWithOfferUseCase } from 'src/projection/use-cases/generate-projection-with-offer.usecase';
 import { GenerateProjectionUseCase } from 'src/projection/use-cases/generate-projection.usecase';
 
 
@@ -35,8 +35,8 @@ export class ProjectionsController {
   constructor(
     private readonly usecase: GenerateProjectionUseCase,
     private readonly repo: ProjectionRepository,
-    private readonly usecaseOffer: GenerateProjectionWithOfferUseCase,
-    private readonly usecaseOptions: GenerateProjectionOptionsUseCase,
+    // private readonly usecaseOffer: GenerateProjectionWithOfferUseCase,
+    // private readonly usecaseOptions: GenerateProjectionOptionsUseCase,
   ) {}
 
   @Post('generar')
@@ -46,42 +46,49 @@ export class ProjectionsController {
     return this.usecase.exec(dto);
   }
 
-  @Post('generar-con-oferta')
-  @ApiOperation({ summary: 'Generar proyeccion seleccionando NRCs de oferta' })
-  @ApiBody({ type: GenerarConOfertaDto })
-  generarConOferta(@Body() dto: GenerarConOfertaDto) {
-    return this.usecaseOffer.exec(dto);
-  }
+// For testing
+  // @Post('generar')
+  // generarPayloadCheck(@Body() params: any) {
+  //   console.log('generar.payload', params);
+  //   return this.usecase.exec(params);
+  // }
 
-  @Post('generar-opciones')
-  @ApiOperation({ summary: 'Generar varias opciones de proyeccion (sin oferta)' })
-  @ApiBody({ type: GenerarProyeccionDto })
-  generarOpciones(@Body() dto: GenerarProyeccionDto & { maxOptions?: number }) {
-    return this.usecaseOptions.exec(dto);
-  }
+  // @Post('generar-con-oferta')
+  // @ApiOperation({ summary: 'Generar proyeccion seleccionando NRCs de oferta' })
+  // @ApiBody({ type: GenerarConOfertaDto })
+  // generarConOferta(@Body() dto: GenerarConOfertaDto) {
+  //   return this.usecaseOffer.exec(dto);
+  // }
 
-  @Post('guardar')
-  @ApiOperation({ summary: 'Generar y guardar proyeccion' })
-  @ApiBody({ type: GuardarProyeccionDto })
-  async guardar(@Body() dto: GuardarProyeccionDto) {
-    const result = await this.usecase.exec(dto);
-    return this.repo.createAndMaybeFavorite({
-      rut: dto.rut,
-      codCarrera: dto.codCarrera,
-      catalogo: dto.catalogo,
-      nombre: dto.nombre,
-      favorite: dto.favorite,
-      totalCreditos: result.totalCreditos,
-      items: result.seleccion.map((x) => ({
-        codigo: x.codigo,
-        asignatura: x.asignatura,
-        creditos: x.creditos,
-        nivel: x.nivel,
-        motivo: x.motivo,
-        nrc: x.nrc, // ya tipado en ProjectionCourse
-      })),
-    });
-  }
+  // @Post('generar-opciones')
+  // @ApiOperation({ summary: 'Generar varias opciones de proyeccion (sin oferta)' })
+  // @ApiBody({ type: GenerarProyeccionDto })
+  // generarOpciones(@Body() dto: GenerarProyeccionDto & { maxOptions?: number }) {
+  //   return this.usecaseOptions.exec(dto);
+  // }
+
+  // @Post('guardar')
+  // @ApiOperation({ summary: 'Generar y guardar proyeccion' })
+  // @ApiBody({ type: GuardarProyeccionDto })
+  // async guardar(@Body() dto: GuardarProyeccionDto) {
+  //   const result = await this.usecase.exec(dto);
+  //   return this.repo.createAndMaybeFavorite({
+  //     rut: dto.rut,
+  //     codCarrera: dto.codCarrera,
+  //     catalogo: dto.catalogo,
+  //     nombre: dto.nombre,
+  //     favorite: dto.favorite,
+  //     totalCreditos: result.totalCreditos,
+  //     items: result.seleccion.map((x) => ({
+  //       codigo: x.codigo,
+  //       asignatura: x.asignatura,
+  //       creditos: x.creditos,
+  //       nivel: x.nivel,
+  //       motivo: x.motivo,
+  //       nrc: x.nrc, // ya tipado en ProjectionCourse
+  //     })),
+  //   });
+  // }
 
   @Get('mias')
   @ApiOperation({ summary: 'Listar mis proyecciones' })

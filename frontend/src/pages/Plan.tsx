@@ -24,7 +24,14 @@ type ProjectionCourse = {
 type ProjectionResult = {
   seleccion: ProjectionCourse[];
   totalCreditos: number;
+  // reglas: {
+  //   topeCreditos: number;
+  //   verificaPrereq: true;
+  //   priorizarReprobados: boolean;
+  //   maximizarCreditos: boolean;
+  // };
 };
+
 
 type Course = {
   codigo: string;
@@ -134,16 +141,13 @@ export default function Plan() {
   }
 
   // etiquetas base y extras; por defecto mostrar las extras primero y las bases al final
-  const etiquetasBase = ['NIVEL'];
+  const etiquetasBase = ['NIVEL MAS BAJO'];
   const etiquetasExtras = [
     ...(priorizarReprobados ? ['REPROBADOS'] : []),
     ...(prioritarios.length > 0 ? ['PRIORITARIOS'] : []),
   ];
 
-  // lista completa: extras primero, luego las bases -> así las bases aparecen al final por defecto
   const etiquetasVisibles = [...etiquetasExtras, ...etiquetasBase];
-
-  // inicializar con el orden por defecto (extras primero)
   const [ordenEtiquetas, setOrdenEtiquetas] = useState<string[]>(() => etiquetasVisibles);
 
   // Sincroniza ordenEtiquetas cuando cambian las opciones visibles.
@@ -176,8 +180,22 @@ export default function Plan() {
   async function generar(e: FormEvent) {
     e.preventDefault();
     if (!seleccion) return;
+
     setLoading(true);
+
     try {
+      const payload = {
+        rut,
+        codCarrera: seleccion.codCarrera,
+        catalogo: seleccion.catalogo,
+        topeCreditos: tope,
+        prioritarios,
+        maximizarCreditos,
+        priorizarReprobados,
+        ordenPrioridades: ordenEtiquetas,
+      };
+      console.log('Payload', payload);
+
       const res = await api<ProjectionResult>('/proyecciones/generar', {
         method: 'POST',
         body: JSON.stringify({
@@ -187,21 +205,26 @@ export default function Plan() {
           topeCreditos: tope,
           prioritarios,
           maximizarCreditos,
-          // se incluye el flag por compatibilidad (opcional en backend)
           priorizarReprobados,
-          // envío del orden de prioridades/etiquetas para que el backend pueda ordenar los cursos
           ordenPrioridades: ordenEtiquetas,
         }),
       });
+
+      // Store the single projection in variants array
       setVariants([res]);
       setActiveIndex(0);
-      toast({ type: 'success', message: 'Proyeccion generada' });
+
+      toast({ type: 'success', message: 'Proyección generada' });
     } catch (err) {
-      toast({ type: 'error', message: (err as Error).message || 'No pudimos generar la proyeccion' });
+      toast({
+        type: 'error',
+        message: (err as Error).message || 'No pudimos generar la proyección',
+      });
     } finally {
       setLoading(false);
     }
   }
+  
 
   async function generarOpciones() {
     if (!seleccion) return;

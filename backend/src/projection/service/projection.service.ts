@@ -45,12 +45,17 @@ export class ProjectionService {
     const order = ordenPrioridades || [];
     cursos.sort((a, b) => ProjectionService.compareByTags(a, b, order));
 
-    // --- Select until credit cap ---
-    const { seleccion, totalCreditos } = ProjectionService.pickCoursesUntilCap(cursos, tope);
+    // --- Select courses ---
+    let seleccion: ProjectionCourse[] = [];
+    let totalCreditos = 0;
 
+    if (maximizarCreditos) {
+      ({ seleccion, totalCreditos } = ProjectionService.pickCoursesMaximizedCredits(cursos, tope));
+    } else {
+      ({ seleccion, totalCreditos } = ProjectionService.pickCoursesUntilCap(cursos, tope));
+    }
 
-
-      return {
+    return {
       seleccion,
       totalCreditos,
       reglas: {
@@ -61,7 +66,6 @@ export class ProjectionService {
       },
     };
   }
-
 
   // --- Pick courses until credit limit ---
   private static pickCoursesUntilCap(
@@ -83,9 +87,66 @@ export class ProjectionService {
     return { seleccion, totalCreditos };
   }
 
+  // --- Pick courses aiming for exact credit limit ---
+  // 0 1 2 3 4 5 6 7 8 9 
+  // - -       - 6 2
+  //   - - - 6 2
+  //     -   - 6 3   
+  //   - -       - 9 3
+  //     - - - 9 3   
+  //       -   - 8 4   
+  private static pickCoursesMaximizedCredits(
+    cursos: (ProjectionCourse & { _isReprob: boolean; _isPrio: boolean })[],
+    tope: number,
+  ): { seleccion: ProjectionCourse[]; totalCreditos: number } {
+    const n = cursos.length;
+
+    // dp[sum] = { totalCredits, indicesUsed }
+    // keep best combination for each credit total up to tope
+    const dp = Array<(number[] | null)>(tope + 1).fill(null);
+    dp[0] = [];
+
+    for (let i = 0; i < n; i++) {
+      const c = cursos[i];
+      for (let t = tope; t >= c.creditos; t--) {
+        const prev = dp[t - c.creditos];
+        if (prev) {
+          const candidate = [...prev, i];
+          if (!dp[t] || ProjectionService.isBetterCombination(candidate, dp[t]!)) {
+            dp[t] = candidate;
+          }
+        }
+      }
+    }
+
+    // --- Choose best total ---
+    let bestTotal = -1;
+    for (let t = tope; t >= 0; t--) {
+      if (dp[t]) {
+        bestTotal = t;
+        break;
+      }
+    }
+
+    const indices = dp[bestTotal] || [];
+    const seleccion = indices.map((i) => {
+      const { _isReprob, _isPrio, ...rest } = cursos[i];
+      return rest;
+    });
+
+    return { seleccion, totalCreditos: bestTotal };
+  }
 
 // --- Helpers ---
 
+  // --- Choose lexicographically "earlier" course combination ---
+  private static isBetterCombination(a: number[], b: number[]): boolean {
+    // both have same total credits, so prefer lower average index
+    if (a.length !== b.length) return a.length > b.length; // prefer using more courses
+    const avgA = a.reduce((s, x) => s + x, 0) / a.length;
+    const avgB = b.reduce((s, x) => s + x, 0) / b.length;
+    return avgA < avgB;
+  }
   // --- Prerequisite check ---
   static hasPrereqs(course: Course, aprobados: Set<string>): boolean {
     const p = (course.prereq || '').trim();

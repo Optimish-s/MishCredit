@@ -1,5 +1,3 @@
-// caso de uso para generar proyeccion sin acentos ni punto final
-
 import { Injectable, Logger } from "@nestjs/common";
 import { AvanceService } from "src/avance/avance.service";
 import { AvanceItem } from "src/avance/entities/avance.entity";
@@ -85,7 +83,7 @@ export class GenerateProjectionUseCase {
     const avance = parseAvance(avanceRaw);
 
     // --- Diagnóstico para debug ---
-    console.log('diag.proyeccion', {
+    this.logger.log('diag.proyeccion', {
       mallaLen: malla.length,
       avanceLen: avance.length,
       aprobados: avance.filter(a => a.status === 'APROBADO').length,

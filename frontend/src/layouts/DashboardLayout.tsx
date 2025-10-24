@@ -74,15 +74,25 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 transition-colors dark:bg-slate-900 dark:text-slate-100">
-      <aside className="fixed inset-y-0 left-0 z-30 w-72 bg-teal-900 text-white transition-transform duration-200 dark:bg-teal-950">
-        <div className="flex h-16 items-center gap-3 border-b border-white/10 px-4">
+      <aside className="fixed inset-y-0 left-0 z-30 w-72 bg-teal-900 text-white transition-transform duration-200 overflow-hidden">
+        {/* --- Header with RUT and Carrera --- */}
+        <div className="flex h-16 items-center gap-3 border-b border-white/10 px-4 relative z-10">
           <div className="h-9 w-9 rounded-full bg-white/20" />
           <div className="text-sm">
             <p className="font-semibold leading-none">{rut || 'Sin identificación'}</p>
-            <p className="opacity-80">{seleccion ? `${seleccion.codCarrera}-${seleccion.catalogo}` : 'Selecciona carrera'}</p>
+            <p className="opacity-80">
+              {seleccion
+                ? `${seleccion.codCarrera}-${seleccion.catalogo}`
+                : 'Selecciona carrera'}
+            </p>
           </div>
         </div>
-        <nav className="thin-scroll flex-1 overflow-y-auto px-3 py-4 space-y-1">
+
+        {/* --- Colored overlay covering the entire sidebar --- */}
+        <div className="absolute inset-0 bg-slate-900/40 pointer-events-none z-0" />
+
+        {/* --- Nav items --- */}
+        <nav className="thin-scroll flex-1 overflow-y-auto px-3 py-4 space-y-1 relative z-10">
           {filteredNav.map((item) => (
             <NavLink
               key={item.to}
@@ -99,6 +109,7 @@ export default function DashboardLayout() {
               {item.label}
             </NavLink>
           ))}
+
           {!adminKey && (
             <Link
               to="/admin"
@@ -108,7 +119,9 @@ export default function DashboardLayout() {
             </Link>
           )}
         </nav>
-        <div className="border-t border-white/10 p-4">
+
+        {/* --- Footer with logout --- */}
+        <div className="border-t border-white/10 p-4 relative z-10">
           <button
             className="w-full rounded-xl bg-orange-500 py-3 font-semibold text-white shadow hover:bg-orange-600"
             onClick={logout}
@@ -117,6 +130,8 @@ export default function DashboardLayout() {
           </button>
         </div>
       </aside>
+
+
 
       <div className="ml-72 min-h-screen">
         <header className="flex h-16 items-center gap-3 border-b border-slate-200 bg-white px-4 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-800">

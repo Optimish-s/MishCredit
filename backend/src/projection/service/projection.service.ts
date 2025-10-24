@@ -67,6 +67,99 @@ export class ProjectionService {
     };
   }
 
+  static buildOptions(input: ProjectionInput, maxOptions): ProjectionResult[] {
+    const { malla, avance, topeCreditos, ordenPrioridades, prioritarios, priorizarReprobados, maximizarCreditos } = input;
+    
+    const tope = Number.isFinite(topeCreditos) && topeCreditos! > 0 ? topeCreditos! : 22;
+
+    // --- Build sets for statuses ---
+    const aprobados = new Set<string>(
+      avance.filter((a) => a.status === 'APROBADO').map((a) => a.course),
+    );
+    const reprobados = new Set<string>(
+      avance.filter((a) => a.status === 'REPROBADO').map((a) => a.course),
+    );
+    const prios = new Set<string>(
+      (prioritarios || []).map((s) => (s || '').trim()).filter(Boolean),
+    );
+
+    // --- Get pending courses (not approved yet) ---
+    const pendientes = malla.filter((c) => !aprobados.has(c.codigo));
+
+    // --- Keep only courses that can be taken (passed prereqs or reprobado) ---
+    const disponibles = pendientes.filter(
+      (c) => reprobados.has(c.codigo) || ProjectionService.hasPrereqs(c, aprobados),
+    )
+        .sort((a, b) => {
+        if (a._rank !== b._rank) return a._rank - b._rank;
+        if (a.nivel !== b.nivel) return a.nivel - b.nivel;
+        return b.creditos - a.creditos;
+      });
+
+    // generar variantes saltando uno a uno de la base
+    for (let i = 0; i < base.seleccion.length && opciones.length < maxOptions; i++) {
+      const skipCode = base.seleccion[i].codigo;
+      let total = 0;
+      const pick: ProjectionCourse[] = [];
+      for (const c of candidatos) {
+        if (c.codigo === skipCode) continue;
+        if (total + c.creditos <= tope) {
+          const { _rank, ...rest } = c as ProjectionCourse & { _rank?: number };
+          pick.push(rest as ProjectionCourse);
+          total += c.creditos;
+        }
+        if (total >= tope) break;
+      }
+      // evitar duplicados respecto a base
+      const same =
+        pick.length === base.seleccion.length &&
+        pick.every((p, idx) => p.codigo === base.seleccion[idx].codigo);
+      if (!same && pick.length > 0) {
+        opciones.push({
+          seleccion: pick,
+          totalCreditos: total,
+          reglas: base.reglas,
+        });
+      }
+    }
+
+    // generar variantes forzando incluir cursos prioritarios si no quedaron en base
+    const prios = new Set<string>((input.prioritarios || []).filter(Boolean));
+    for (const code of prios) {
+      if (opciones.length >= maxOptions) break;
+      const inBase = base.seleccion.some((s) => s.codigo === code);
+      const cand = candidatos.find((c) => c.codigo === code);
+      if (inBase || !cand) continue;
+      let total = 0;
+      const pick: ProjectionCourse[] = [];
+      // incluir prioritario primero
+      if (cand.creditos > tope) continue;
+      const { _rank: _r1, ...restP } = cand as ProjectionCourse & { _rank?: number };
+      pick.push(restP as ProjectionCourse);
+      total += cand.creditos;
+      for (const c of candidatos) {
+        if (c.codigo === code) continue;
+        if (total + c.creditos <= tope) {
+          const { _rank, ...rest } = c as ProjectionCourse & { _rank?: number };
+          pick.push(rest as ProjectionCourse);
+          total += c.creditos;
+        }
+        if (total >= tope) break;
+      }
+      
+      const dup = opciones.some(
+        (opt) =>
+          opt.seleccion.length === pick.length &&
+          opt.seleccion.every((p, idx) => p.codigo === pick[idx].codigo),
+      );
+      if (!dup) {
+        opciones.push({ seleccion: pick, totalCreditos: total, reglas: base.reglas });
+      }
+    }
+
+    return opciones;
+  }
+
   // --- Pick courses until credit limit ---
   private static pickCoursesUntilCap(
     cursos: (ProjectionCourse & { _isReprob: boolean; _isPrio: boolean })[],

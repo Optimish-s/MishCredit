@@ -6,17 +6,12 @@ export class GenerarProyeccionDto {
   @IsString() @IsNotEmpty() codCarrera!: string;
   @IsString() @IsNotEmpty() catalogo!: string;
   @Type(() => Number) @IsNumber() @Min(1) topeCreditos!: number;
-  // @IsOptional() @Type(() => Number) @IsNumber() @Min(1) nivelObjetivo?: number;
   @IsOptional() @Type(() => String) prioritarios?: string[];
   @IsBoolean() maximizarCreditos?: boolean;
   @IsBoolean() priorizarReprobados?: boolean;
   // Transform ordenPrioridades into array of strings
   @Transform(({ value }) => (Array.isArray(value) ? value.map(String) : []))
   @IsString({ each: true }) ordenPrioridades!: string[];
-}
-
-export class GenerarConOfertaDto extends GenerarProyeccionDto {
-  @IsString() @IsNotEmpty() period!: string;
 }
 
 export class GuardarProyeccionDto extends GenerarProyeccionDto {

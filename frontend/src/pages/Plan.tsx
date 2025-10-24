@@ -32,7 +32,6 @@ type ProjectionResult = {
   // };
 };
 
-
 type Course = {
   codigo: string;
   asignatura: string;
@@ -224,7 +223,6 @@ export default function Plan() {
       setLoading(false);
     }
   }
-  
 
   async function generarOpciones() {
     if (!seleccion) return;
@@ -239,9 +237,8 @@ export default function Plan() {
           topeCreditos: tope,
           prioritarios,
           maximizarCreditos,
-          // enviar el orden de prioridades para que las opciones respeten la prioridad indicada
-          ordenPrioridades: ordenEtiquetas,
           priorizarReprobados,
+          ordenPrioridades: ordenEtiquetas,
           maxOptions: 5,
         }),
       });
@@ -268,7 +265,7 @@ export default function Plan() {
         rut,
         codCarrera: seleccion.codCarrera,
         catalogo: seleccion.catalogo,
-        nombre: favorite ? 'Proyeccion favorita generada' : 'Proyeccion generada',
+        nombre: favorite ? 'Proyección favorita generada' : 'Proyección generada',
         favorite,
         totalCreditos: variant.totalCreditos,
         items: variant.seleccion,
@@ -276,7 +273,7 @@ export default function Plan() {
     });
     toast({
       type: 'success',
-      message: favorite ? 'Proyección guardada como favorita' : 'Proyeccion guardada',
+      message: favorite ? 'Proyección guardada como favorita' : 'Proyección guardada',
     });
   }
 
@@ -285,7 +282,7 @@ export default function Plan() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold">Crear proyeccion</h1>
+        <h1 className="text-2xl font-bold">Crear proyección</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">
           Define tus parametros, prioriza ramos y genera alternativas que respeten prerrequisitos y carga académica.
         </p>
@@ -487,7 +484,7 @@ export default function Plan() {
 
       <section className="flex flex-wrap gap-3">
         <Button onClick={generar} isLoading={loading}>
-          Generar proyeccion
+          Generar proyección
         </Button>
         <Button variant="secondary" onClick={generarOpciones} disabled={loading}>
           Generar variantes
@@ -544,8 +541,8 @@ export default function Plan() {
       ) : (
         !loading && (
           <EmptyState
-            title="Aun no generas una proyeccion"
-            description="Configura los parametros iniciales y presiona Generar proyeccion para ver el resultado."
+            title="Aún no generas una proyección"
+            description="Configura tus preferencias y presiona Generar proyección para ver el resultado."
             actionLabel="Generar ahora"
             onAction={() => document.querySelector<HTMLFormElement>('form')?.requestSubmit()} // ? esto no funciona
           />
@@ -560,7 +557,7 @@ export default function Plan() {
                 Malla (selector de prioritarios)
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Marca los cursos que quieras priorizar en la proyeccion.
+                Marca los cursos que quieras priorizar en la proyección.
               </p>
             </div>
             <input
@@ -606,7 +603,7 @@ export default function Plan() {
             <div>
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-100">Opciones generadas</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Selecciona una variante para ver el detalle y guardarla en tus proyecciones.
+                Selecciona una variante para ver sus detalles y guardarla en tus proyecciones.
               </p>
             </div>
             <Button size="sm" variant="secondary" onClick={generarOpciones} disabled={loading}>
@@ -689,7 +686,7 @@ export default function Plan() {
               <EmptyState
                 className="bg-transparent shadow-none"
                 title="Genera tu primera variante"
-                description="Presiona Generar proyeccion o Generar variantes para poblar este panel."
+                description="Presiona Generar proyección y Generar variantes para usar este panel."
               />
             )}
           </div>

@@ -63,10 +63,13 @@ export class ProjectionService {
         verificaPrereq: true,
         priorizarReprobados,
         maximizarCreditos,
+        prioritarios,
+        ordenPrioridades: ordenPrioridades || [],
       },
     };
   }
-
+  
+/*
   static buildOptions(input: ProjectionInput, maxOptions): ProjectionResult[] {
     const { malla, avance, topeCreditos, ordenPrioridades, prioritarios, priorizarReprobados, maximizarCreditos } = input;
     
@@ -159,6 +162,7 @@ export class ProjectionService {
 
     return opciones;
   }
+*/  
 
   // --- Pick courses until credit limit ---
   private static pickCoursesUntilCap(

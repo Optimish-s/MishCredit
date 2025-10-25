@@ -6,7 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ProjectionsController } from './projection.controller';
 import { UcnModule } from 'src/ucn/ucn.module';
 import { GenerateProjectionUseCase } from 'src/projection/use-cases/generate-projection.usecase';
-// import { GenerateProjectionOptionsUseCase } from 'src/projection/use-cases/generate-projection-options.usecase';
+import { GenerateProjectionOptionsUseCase } from 'src/projection/use-cases/generate-projection-options.usecase';
 import { ProjectionRepository } from 'src/db/projection.repository';
 import { Projection, ProjectionSchema } from 'src/db/projection.schema';
 import { MallaModule } from 'src/malla/malla.module';
@@ -33,7 +33,7 @@ import { AvanceModule } from 'src/avance/avance.module';
     ProjectionService,
     ProjectionRepository,
     GenerateProjectionUseCase,
-    // GenerateProjectionOptionsUseCase,
+    GenerateProjectionOptionsUseCase,
   ],
 })
 export class ProjectionsModule {}

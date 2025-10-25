@@ -44,12 +44,13 @@ export class ProjectionsController {
     return this.usecase.exec(dto);
   }
 
-// For testing
-  // @Post('generar')
-  // generarPayloadCheck(@Body() params: any) {
-  //   console.log('generar.payload', params);
-  //   return this.usecase.exec(params);
-  // }
+  /*For testing
+  @Post('generar')
+  generarPayloadCheck(@Body() params: any) {
+    console.log('generar.payload', params);
+    return this.usecase.exec(params);
+  }
+  */
 
   @Post('generar-opciones')
   @ApiOperation({ summary: 'Generar varias opciones de proyeccion (sin oferta)' })

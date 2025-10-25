@@ -26,7 +26,9 @@ export interface ProjectionResult {
   reglas: {
     topeCreditos: number;
     verificaPrereq: true;
-    priorizarReprobados: boolean; //Not sure why the Result has these two booleans
+    priorizarReprobados: boolean;
     maximizarCreditos: boolean;
+    prioritarios?: string[];
+    ordenPrioridades: string[];
   };
 }

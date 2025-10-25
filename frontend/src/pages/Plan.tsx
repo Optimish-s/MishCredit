@@ -486,9 +486,11 @@ export default function Plan() {
         <Button onClick={generar} isLoading={loading}>
           Generar proyección
         </Button>
-        <Button variant="secondary" onClick={generarOpciones} disabled={loading}>
-          Generar variantes
-        </Button>
+        {variants.length > 0 && (
+          <Button variant="secondary" onClick={generarOpciones} disabled={loading}>
+            Generar variantes
+          </Button>
+        )}
       </section>
 
       {loading && <LoadingState message="Calculando combinaciones..." rows={4} />}
@@ -606,9 +608,11 @@ export default function Plan() {
                 Selecciona una variante para ver sus detalles y guardarla en tus proyecciones.
               </p>
             </div>
-            <Button size="sm" variant="secondary" onClick={generarOpciones} disabled={loading}>
-              Regenerar variantes
-            </Button>
+            {variants.length > 0 && (
+              <Button size="sm" variant="secondary" onClick={generarOpciones} disabled={loading}>
+                Regenerar variantes
+              </Button>
+            )}
           </div>
           <div className="space-y-3 px-4 py-3">
             {variants.map((variant, idx) => {

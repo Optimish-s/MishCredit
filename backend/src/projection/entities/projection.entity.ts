@@ -5,8 +5,10 @@ export interface ProjectionInput {
   malla: Course[];
   avance: AvanceItem[];
   topeCreditos: number;
-  nivelObjetivo?: number; // semestre objetivo declarado por el usuario (1..n)
-  prioritarios?: string[]; // codigos de cursos a priorizar si cumplen reglas
+  prioritarios: string[]; // codigos de cursos a priorizar si cumplen reglas
+  maximizarCreditos: boolean; // flag to maximize credits usage
+  priorizarReprobados: boolean; // flag to prioritize failed courses
+  ordenPrioridades: string[]; // ordered list of priority tags
 }
 
 export interface ProjectionCourse {
@@ -15,7 +17,7 @@ export interface ProjectionCourse {
   creditos: number;
   nivel: number;
   motivo: 'REPROBADO' | 'PENDIENTE';
-  nrc?: string; // <- agregado para no usar any en otros archivos
+  nrc?: string; // optional NRC for course identification
 }
 
 export interface ProjectionResult {
@@ -23,7 +25,10 @@ export interface ProjectionResult {
   totalCreditos: number;
   reglas: {
     topeCreditos: number;
-    priorizaReprobados: true;
     verificaPrereq: true;
+    priorizarReprobados: boolean;
+    maximizarCreditos: boolean;
+    prioritarios?: string[];
+    ordenPrioridades: string[];
   };
 }

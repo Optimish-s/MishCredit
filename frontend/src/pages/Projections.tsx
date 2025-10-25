@@ -54,6 +54,14 @@ export default function Projections() {
     };
   }, [list]);
 
+  // ensure favorite projection appears first in the grid
+  const sortedList = useMemo(() => {
+    if (!list.length) return list;
+    const favorite = list.find((p) => p.isFavorite);
+    if (!favorite) return list;
+    return [favorite, ...list.filter((p) => p._id !== favorite._id)];
+  }, [list]);
+
   async function marcarFavorita(id: string) {
     const ok = await confirm({
       title: 'Marcar como favorita',
@@ -121,7 +129,7 @@ export default function Projections() {
       {loading && <LoadingState message="Cargando tus proyecciones..." rows={4} />}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {list.map((proj) => {
+        {sortedList.map((proj) => {
           const isExpanded = Boolean(expanded[proj._id]);
           const nameValue = editing[proj._id] ?? proj.nombre ?? '';
 
@@ -160,7 +168,7 @@ export default function Projections() {
                     Guardar nombre
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => setExpanded((prev) => ({ ...prev, [proj._id]: !isExpanded }))}>
-                    {isExpanded ? 'Ocultar malla' : 'Ver malla'}
+                    {isExpanded ? 'Ocultar ramos' : 'Ver ramos'}
                   </Button>
                 </div>
 

@@ -21,10 +21,9 @@ import {
 } from 'class-validator';
 
  
-import { GenerarProyeccionDto, GenerarConOfertaDto, GuardarProyeccionDto, FavoritaDto } from './dto/projection.dto';
+import { GenerarProyeccionDto, GuardarProyeccionDto, FavoritaDto } from './dto/projection.dto';
 import { ProjectionRepository } from 'src/db/projection.repository';
 import { GenerateProjectionOptionsUseCase } from 'src/projection/use-cases/generate-projection-options.usecase';
-import { GenerateProjectionWithOfferUseCase } from 'src/projection/use-cases/generate-projection-with-offer.usecase';
 import { GenerateProjectionUseCase } from 'src/projection/use-cases/generate-projection.usecase';
 
 
@@ -35,7 +34,6 @@ export class ProjectionsController {
   constructor(
     private readonly usecase: GenerateProjectionUseCase,
     private readonly repo: ProjectionRepository,
-    private readonly usecaseOffer: GenerateProjectionWithOfferUseCase,
     private readonly usecaseOptions: GenerateProjectionOptionsUseCase,
   ) {}
 
@@ -46,12 +44,13 @@ export class ProjectionsController {
     return this.usecase.exec(dto);
   }
 
-  @Post('generar-con-oferta')
-  @ApiOperation({ summary: 'Generar proyeccion seleccionando NRCs de oferta' })
-  @ApiBody({ type: GenerarConOfertaDto })
-  generarConOferta(@Body() dto: GenerarConOfertaDto) {
-    return this.usecaseOffer.exec(dto);
+  /*For testing
+  @Post('generar')
+  generarPayloadCheck(@Body() params: any) {
+    console.log('generar.payload', params);
+    return this.usecase.exec(params);
   }
+  */
 
   @Post('generar-opciones')
   @ApiOperation({ summary: 'Generar varias opciones de proyeccion (sin oferta)' })
@@ -83,6 +82,31 @@ export class ProjectionsController {
     });
   }
 
+  @Post('guardar-directo')
+  @ApiOperation({ summary: 'Guardar proyeccion desde items ya calculados' })
+  @ApiBody({ description: 'Recibe items tal cual para persistir' })
+  async guardarDirecto(
+    @Body()
+    body: {
+      rut: string;
+      codCarrera: string;
+      catalogo: string;
+      nombre?: string;
+      favorite?: boolean;
+      totalCreditos: number;
+      items: Array<{
+        codigo: string;
+        asignatura: string;
+        creditos: number;
+        nivel: number;
+        motivo: 'REPROBADO' | 'PENDIENTE';
+        nrc?: string;
+      }>;
+    },
+  ) {
+    return this.repo.createAndMaybeFavorite(body);
+  }
+
   @Get('mias')
   @ApiOperation({ summary: 'Listar mis proyecciones' })
   @ApiQuery({ name: 'rut', required: true })
@@ -112,31 +136,6 @@ export class ProjectionsController {
   ) {
     await this.repo.updateName(body.rut, id, body.nombre);
     return { ok: true };
-  }
-
-  @Post('guardar-directo')
-  @ApiOperation({ summary: 'Guardar proyeccion desde items ya calculados' })
-  @ApiBody({ description: 'Recibe items tal cual para persistir' })
-  async guardarDirecto(
-    @Body()
-    body: {
-      rut: string;
-      codCarrera: string;
-      catalogo: string;
-      nombre?: string;
-      favorite?: boolean;
-      totalCreditos: number;
-      items: Array<{
-        codigo: string;
-        asignatura: string;
-        creditos: number;
-        nivel: number;
-        motivo: 'REPROBADO' | 'PENDIENTE';
-        nrc?: string;
-      }>;
-    },
-  ) {
-    return this.repo.createAndMaybeFavorite(body);
   }
 
   @Get('demanda/agregada')

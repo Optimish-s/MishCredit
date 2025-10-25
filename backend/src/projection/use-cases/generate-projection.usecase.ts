@@ -1,16 +1,12 @@
-// caso de uso para generar proyeccion sin acentos ni punto final
-
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { AvanceService } from "src/avance/avance.service";
 import { AvanceItem } from "src/avance/entities/avance.entity";
 import { MallaService } from "src/malla/malla.service";
 import { Course } from "src/projection/entities/course.entity";
-import { ProjectionResult } from "src/projection/entities/projection.entity";
-import { ProjectionService } from "src/projection/projection.service";
+import { ProjectionInput, ProjectionResult } from "src/projection/entities/projection.entity";
+import { ProjectionService } from "src/projection/service/projection.service";
 
-
-
-// helpers seguros para parsear unknown y evitar no-base-to-string
+// ----------------- helpers -----------------
 function s(v: unknown): string {
   if (typeof v === 'string') return v;
   if (typeof v === 'number' && Number.isFinite(v)) return String(v);
@@ -28,10 +24,7 @@ function b(v: unknown): boolean {
 }
 
 function parseMalla(data: unknown): Course[] {
-  if (!Array.isArray(data)) {
-    // si no viene como array, devolvemos vacio y seguimos
-    return [];
-  }
+  if (!Array.isArray(data)) return [];
   return data.map((x) => {
     const obj = x as Record<string, unknown>;
     return {
@@ -45,10 +38,7 @@ function parseMalla(data: unknown): Course[] {
 }
 
 function parseAvance(data: unknown): AvanceItem[] {
-  if (!Array.isArray(data)) {
-    // si viene {error: "..."} o cualquier otra cosa, tratamos como sin avance
-    return [];
-  }
+  if (!Array.isArray(data)) return [];
   return data.map((x) => {
     const obj = x as Record<string, unknown>;
     return {
@@ -63,12 +53,15 @@ function parseAvance(data: unknown): AvanceItem[] {
   });
 }
  
+// ----------------- main use case -----------------
 @Injectable()
 export class GenerateProjectionUseCase {
+  private readonly logger = new Logger(GenerateProjectionUseCase.name);
+
   constructor(
     private readonly mallaService: MallaService,
-    private readonly AvanceService: AvanceService,
-  ) { }
+    private readonly avanceService: AvanceService,
+  ) {}
 
   async exec(params: {
     rut: string;
@@ -76,38 +69,48 @@ export class GenerateProjectionUseCase {
     catalogo: string;
     topeCreditos: number;
     prioritarios?: string[];
-    nivelObjetivo?: number;
+    maximizarCreditos?: boolean;
+    priorizarReprobados?: boolean;
+    ordenPrioridades: string[];
   }): Promise<ProjectionResult> {
-    const mallaRaw = await this.mallaService.getMalla(
-      params.codCarrera,
-      params.catalogo,
-    );
-    const avanceRaw = await this.AvanceService.getAvance(params.rut, params.codCarrera);
+
+    this.logger.log(`Iniciando proyección con nuevas reglas`);
+
+    const mallaRaw = await this.mallaService.getMalla(params.codCarrera, params.catalogo);
+    const avanceRaw = await this.avanceService.getAvance(params.rut, params.codCarrera);
 
     const malla = parseMalla(mallaRaw);
     const avance = parseAvance(avanceRaw);
 
-    // diagnostico minimo
-
-    console.log('diag.proyeccion', {
+    // --- Diagnóstico para debug ---
+    this.logger.log('diag.proyeccion', {
       mallaLen: malla.length,
       avanceLen: avance.length,
-      aprobados: avance.filter((a) => a.status === 'APROBADO').length,
-      reprobados: avance.filter((a) => a.status === 'REPROBADO').length,
-      ejemploMalla: malla.slice(0, 3).map((c) => c.codigo),
+      aprobados: avance.filter(a => a.status === 'APROBADO').length,
+      reprobados: avance.filter(a => a.status === 'REPROBADO').length,
+      ejemploMalla: malla.slice(0, 3).map(c => c.codigo),
       ejemploReprob: avance
-        .filter((a) => a.status === 'REPROBADO')
+        .filter(a => a.status === 'REPROBADO')
         .slice(0, 5)
-        .map((a) => a.course),
+        .map(a => a.course),
       tope: params.topeCreditos,
+      maximizar: params.maximizarCreditos,
+      priorizarReprobados: params.priorizarReprobados,
+      ordenPrioridades: params.ordenPrioridades,
     });
 
-    return ProjectionService.build({
+    // --- Construir ProjectionInput ---
+    const input: ProjectionInput = {
       malla,
       avance,
       topeCreditos: params.topeCreditos,
-      nivelObjetivo: params.nivelObjetivo,
-      prioritarios: params.prioritarios,
-    });
+      prioritarios: params.prioritarios ?? [],
+      maximizarCreditos: params.maximizarCreditos ?? false,
+      priorizarReprobados: params.priorizarReprobados ?? false,
+      ordenPrioridades: params.ordenPrioridades ?? ['NIVEL MAS BAJO'],
+    };
+
+    // --- Ejecutar lógica de proyección ---
+    return ProjectionService.build(input);
   }
 }

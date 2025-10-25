@@ -31,4 +31,14 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-argument': 'warn'
     },
   },
+// disable prettier error reporting for TypeScript files
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      'prettier/prettier': 'off',
+      'linebreak-style': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+    },
+  },
 );

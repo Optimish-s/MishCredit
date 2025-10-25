@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { AxiosError, AxiosResponse } from 'axios';
 import { firstValueFrom, Observable } from 'rxjs';
 
@@ -70,7 +70,7 @@ export class AuthService {
 
     async login(email: string, password: string): Promise<LoginResponse> {
         if (useStubs) {
-            const user = demoUsers.find((u) => u.rut === email && u.password === password);
+            const user = demoUsers.find((u) => (u.email === email || u.rut === email) && u.password === password);
             if (!user) throw new BadRequestException('credenciales invalidas');
             return { rut: user.rut, carreras: user.carreras };
         }

@@ -5,7 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { validateEnvConfig } from './config/env.validation';
- import { OffersModule } from './offers/offers.module';
+import { OffersModule } from './offers/offers.module';
 import { ProjectionsModule } from './projection/projection.module';
 import { HealthController } from './health/health.controller';
 import { AuthController } from './auth/auth.controller';

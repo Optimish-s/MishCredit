@@ -73,10 +73,11 @@ export default function DashboardLayout() {
     )?.nombre ?? '';
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 transition-colors dark:bg-slate-900 dark:text-slate-100">
-      <aside className="fixed inset-y-0 left-0 z-30 w-72 bg-teal-900 text-white transition-transform duration-200 overflow-hidden">
+    <div className="min-h-screen bg-slate-100 text-slate-800 transition-colors dark:bg-slate-900 dark:text-slate-100">
+      <aside className="fixed inset-y-0 left-0 z-30 w-72 bg-teal-700
+      dark:bg-teal-900 text-white transition-transform duration-200 overflow-hidden">
         {/* --- Header with RUT and Carrera --- */}
-        <div className="flex h-16 items-center gap-3 border-b border-white/10 px-4 relative z-10">
+        <div className="flex h-16 items-center gap-3 border-b border-white/10 px-4 z-10">
           <div className="h-9 w-9 rounded-full bg-white/20" />
           <div className="text-sm">
             <p className="font-semibold leading-none">{rut || 'Sin identificación'}</p>
@@ -88,49 +89,54 @@ export default function DashboardLayout() {
           </div>
         </div>
 
-        {/* --- Colored overlay covering the entire sidebar --- */}
-        <div className="absolute inset-0 bg-slate-900/40 pointer-events-none z-0" />
+        {/* --- Content area below header --- */}
+        <div className="relative flex flex-col h-[calc(100%-4rem)]"> {/* 4rem = header height */}
+          {/* Colored overlay */}
+          <div className="absolute inset-0 bg-slate-900/30 pointer-events-none z-0" />
 
-        {/* --- Nav items --- */}
-        <nav className="thin-scroll flex-1 overflow-y-auto px-3 py-4 space-y-1 relative z-10">
-          {filteredNav.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                [
-                  'block rounded-md px-4 py-2 transition',
-                  isActive
-                    ? 'bg-white/15 text-white shadow-sm'
-                    : 'hover:bg-white/10 text-white/80',
-                ].join(' ')
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+          {/* --- Nav + Footer container --- */}
+          <div className="flex flex-col flex-1 justify-between relative z-10 overflow-hidden">
+            {/* --- Nav items (scrollable if long) --- */}
+            <nav className="thin-scroll flex-1 overflow-y-auto px-3 py-4 space-y-1">
+              {filteredNav.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    [
+                      'block rounded-md px-4 py-2 transition',
+                      isActive
+                        ? 'bg-white/15 text-white shadow-sm'
+                        : 'hover:bg-white/10 text-white/80',
+                    ].join(' ')
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              ))}
 
-          {!adminKey && (
-            <Link
-              to="/admin"
-              className="block rounded-md px-4 py-2 text-sm text-white/70 underline underline-offset-4 hover:text-white"
-            >
-              Ingresar clave admin
-            </Link>
-          )}
-        </nav>
+              {!adminKey && (
+                <Link
+                  to="/admin"
+                  className="block rounded-md px-4 py-2 text-sm text-white/70 underline underline-offset-4 hover:text-white"
+                >
+                  Ingresar clave admin
+                </Link>
+              )}
+            </nav>
 
-        {/* --- Footer with logout --- */}
-        <div className="border-t border-white/10 p-4 relative z-10">
-          <button
-            className="w-full rounded-xl bg-orange-500 py-3 font-semibold text-white shadow hover:bg-orange-600"
-            onClick={logout}
-          >
-            Cerrar sesión
-          </button>
+            {/* --- Logout button stays pinned to bottom --- */}
+            <div className="border-t border-white/10 p-4">
+              <button
+                className="w-full rounded-xl bg-amber-600 py-3 font-semibold text-white shadow hover:bg-orange-600"
+                onClick={logout}
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
         </div>
       </aside>
-
 
 
       <div className="ml-72 min-h-screen">
@@ -162,17 +168,17 @@ export default function DashboardLayout() {
             )}
             <button
               onClick={toggle}
-              className="rounded-md border border-slate-200 bg-white p-2 text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-100"
+              className="rounded-full border border-slate-200 bg-white p-2 text-slate-700 transition hover:bg-sky-600/20 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-sky-600/20 dark:text-slate-100"
               aria-pressed={isDark}
               title="Cambiar tema"
             >
               {isDark ? (
-                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M6.76 4.84l-1.8-1.79L3.17 4.84l1.79 1.79 1.8-1.79zM1 13h3v-2H1v2zm10 10h2v-3h-2v3zm8.83-3.16l-1.79-1.79-1.8 1.79 1.8 1.79 1.79-1.79zM20 11v2h3v-2h-3zM6.76 19.16l-1.8 1.79 1.41 1.41 1.79-1.79-1.4-1.41zM11 1h2v3h-2V1zm7.07 3.05l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zM12 6a6 6 0 100 12A6 6 0 0012 6z" />
+                <svg className="h-5 w-5 text-amber-100" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278"/>
                 </svg>
               ) : (
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2a9.93 9.93 0 00-7.06 2.94A10 10 0 1012 2zm0 18a8 8 0 118-8 8 8 0 01-8 8z" />
+                <svg className="h-5 w-5 text-yellow-500" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/>
                 </svg>
               )}
             </button>

@@ -68,10 +68,10 @@ Content-Type: application/json
 DELETE http://localhost:3000/api/proyecciones/ID_AQUI?rut=333333333
 
 ### demanda agregada basada en favoritas por codigo
-GET http://localhost:3000/api/proyecciones/demanda/agregada?codCarrera=8606
+GET http://localhost:3000/api/proyecciones/demanda/agregada?codCarrera=8606&modo=favoritas
 
 ### demanda agregada por nrc
-GET http://localhost:3000/api/proyecciones/demanda/agregada?codCarrera=8606&por=nrc
+GET http://localhost:3000/api/proyecciones/demanda/agregada?codCarrera=8606&por=nrc&modo=total
 
 ### oferta cargar csv
 POST http://localhost:3000/api/oferta/cargar

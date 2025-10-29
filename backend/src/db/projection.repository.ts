@@ -86,28 +86,66 @@ export class ProjectionRepository {
     await this.model.deleteOne({ _id, rut }).exec();
   }
 
-  async demandByCourse(codCarrera?: string, porNrc?: boolean) {
-    const match: Record<string, unknown> = { isFavorite: true };
+  async demandByCourse(
+    codCarrera?: string,
+    porNrc?: boolean,
+    onlyFavorites = true,
+  ): Promise<
+    Array<{
+      codigo: string;
+      asignatura: string;
+      nrc: string | null;
+      count: number;
+    }>
+  > {
+    const match: Record<string, unknown> = {};
+    if (onlyFavorites) {
+      match.isFavorite = true;
+    }
     if (codCarrera) match.codCarrera = codCarrera;
 
     const groupKey = porNrc ? '$items.nrc' : '$items.codigo';
     const pipeline: PipelineStage[] = [
       { $match: match },
       { $unwind: '$items' },
-      ...(porNrc
-        ? [{ $match: { 'items.nrc': { $exists: true, $ne: null } } }]
-        : []),
+      {
+        $match: {
+          'items.codigo': { $exists: true, $nin: [null, ''] },
+          ...(porNrc
+            ? { 'items.nrc': { $exists: true, $nin: [null, ''] } }
+            : {}),
+        },
+      },
       {
         $group: {
           _id: groupKey,
           codigo: { $first: '$items.codigo' },
+          asignatura: { $first: '$items.asignatura' },
           nrc: { $first: '$items.nrc' },
           count: { $sum: 1 },
         },
       },
-      { $sort: { count: -1, _id: 1 } },
+      {
+        $sort: {
+          count: -1,
+          codigo: 1,
+          nrc: 1,
+        },
+      },
     ];
-    return this.model.aggregate(pipeline).exec();
+    const rows: Array<{
+      codigo?: string;
+      asignatura?: string;
+      nrc?: string | null;
+      count: number;
+    }> = await this.model.aggregate(pipeline).exec();
+
+    return rows.map((row) => ({
+      codigo: row.codigo ?? '',
+      asignatura: row.asignatura ?? '',
+      nrc: porNrc ? row.nrc ?? null : null,
+      count: row.count ?? 0,
+    }));
   }
 
   async updateName(rut: string, id: string, nombre: string) {

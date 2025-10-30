@@ -4,6 +4,7 @@ import { useRequireRut } from '../hooks/useRequireRut';
 import { useApp } from '../store/appStore';
 import { useToast } from '../components/Toast';
 import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 import { EmptyState } from '../components/ui/EmptyState';
 import { LoadingState } from '../components/ui/LoadingState';
 import { SortableItem } from '../components/ui/SortableItem';
@@ -40,6 +41,24 @@ type Course = {
   prereq: string;
 };
 
+type SaveDialogState = {
+  open: boolean;
+  variantIndex: number | null;
+  favorite: boolean;
+  name: string;
+  error: string | null;
+  isSaving: boolean;
+};
+
+const createInitialSaveDialog = (): SaveDialogState => ({
+  open: false,
+  variantIndex: null,
+  favorite: false,
+  name: '',
+  error: null,
+  isSaving: false,
+});
+
 export default function Plan() {
   const rut = useRequireRut();
   const toast = useToast();
@@ -59,7 +78,95 @@ export default function Plan() {
 
   const [maximizarCreditos, setMaximizarCreditos] = useState(false);
   const [priorizarReprobados, setPriorizarReprobados] = useState(false);
+  const [saveDialog, setSaveDialog] = useState<SaveDialogState>(() => createInitialSaveDialog());
 
+  function defaultSaveName(favorite: boolean) {
+    const now = new Date();
+    const pad = (value: number) => value.toString().padStart(2, '0');
+    const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(
+      now.getMinutes(),
+    )}${pad(now.getSeconds())}`;
+    return `${favorite ? 'Favorita' : 'Opcion'}-${stamp}`;
+  }
+
+  function openSaveDialog(index: number, favorite: boolean) {
+    if (!seleccion) {
+      toast({ type: 'error', message: 'Seleccion no disponible' });
+      return;
+    }
+    const variant = variants[index];
+    if (!variant) {
+      toast({ type: 'error', message: 'No hay opcion para guardar' });
+      return;
+    }
+    setSaveDialog({
+      open: true,
+      variantIndex: index,
+      favorite,
+      name: defaultSaveName(favorite),
+      error: null,
+      isSaving: false,
+    });
+  }
+
+  function closeSaveDialog() {
+    if (saveDialog.isSaving) return;
+    setSaveDialog(createInitialSaveDialog());
+  }
+
+  async function guardarVariant(index: number, favorite: boolean, nombre: string) {
+    if (!seleccion) {
+      throw new Error('Seleccion no disponible');
+    }
+    const variant = variants[index];
+    if (!variant) {
+      throw new Error('Variante no disponible');
+    }
+    await api('/proyecciones/guardar-directo', {
+      method: 'POST',
+      body: JSON.stringify({
+        rut,
+        codCarrera: seleccion.codCarrera,
+        catalogo: seleccion.catalogo,
+        nombre,
+        favorite,
+        totalCreditos: variant.totalCreditos,
+        items: variant.seleccion,
+      }),
+    });
+  }
+
+  async function confirmSave() {
+    if (!saveDialog.open || saveDialog.variantIndex == null) return;
+    const trimmedName = saveDialog.name.trim();
+    if (!trimmedName) {
+      setSaveDialog((prev) => ({ ...prev, error: 'El nombre no puede estar vacio' }));
+      return;
+    }
+    if (trimmedName.length < 3) {
+      setSaveDialog((prev) => ({ ...prev, error: 'El nombre debe tener al menos 3 caracteres' }));
+      return;
+    }
+    if (trimmedName.length > 60) {
+      setSaveDialog((prev) => ({ ...prev, error: 'El nombre no puede superar 60 caracteres' }));
+      return;
+    }
+    setSaveDialog((prev) => ({ ...prev, isSaving: true, error: null }));
+    try {
+      await guardarVariant(saveDialog.variantIndex, saveDialog.favorite, trimmedName);
+      toast({
+        type: 'success',
+        message: saveDialog.favorite ? 'Proyeccion favorita guardada' : 'Proyeccion guardada',
+      });
+      setSaveDialog(createInitialSaveDialog());
+    } catch (err) {
+      const detail = ((err as Error).message || '').trim();
+      const fallback = 'No se pudo guardar. Reintenta.';
+      const composed = detail && detail !== fallback ? `${fallback} Detalle: ${detail}` : fallback;
+      toast({ type: 'error', message: composed });
+      setSaveDialog((prev) => ({ ...prev, isSaving: false, error: composed }));
+    }
+  }
   useEffect(() => {
     async function loadMalla() {
       if (!seleccion) {
@@ -255,29 +362,12 @@ export default function Plan() {
     }
   }
 
-  async function guardar(index: number, favorite: boolean) {
-    if (!seleccion) return;
-    const variant = variants[index];
-    if (!variant) return;
-    await api('/proyecciones/guardar-directo', {
-      method: 'POST',
-      body: JSON.stringify({
-        rut,
-        codCarrera: seleccion.codCarrera,
-        catalogo: seleccion.catalogo,
-        nombre: favorite ? 'Proyección favorita generada' : 'Proyección generada',
-        favorite,
-        totalCreditos: variant.totalCreditos,
-        items: variant.seleccion,
-      }),
-    });
-    toast({
-      type: 'success',
-      message: favorite ? 'Proyección guardada como favorita' : 'Proyección guardada',
-    });
+  function guardar(index: number, favorite: boolean) {
+    openSaveDialog(index, favorite);
   }
 
   const activeVariant = activeIndex != null ? variants[activeIndex] : null;
+  const dialogVariant = saveDialog.variantIndex != null ? variants[saveDialog.variantIndex] : null;
 
   return (
     <div className="space-y-6">
@@ -696,6 +786,71 @@ export default function Plan() {
           </div>
         </div>
       </section>
+
+      {saveDialog.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={saveDialog.isSaving ? undefined : closeSaveDialog}
+          />
+          <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-lg dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+              {saveDialog.favorite ? 'Guardar favorita' : 'Guardar proyeccion'}
+            </h3>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              Define un nombre para identificar la opcion guardada.
+            </p>
+            {saveDialog.favorite && (
+              <p className="mt-1 text-xs font-medium text-amber-600 dark:text-amber-400">
+                Reemplazara la favorita actual.
+              </p>
+            )}
+            {dialogVariant && (
+              <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300">
+                <p>
+                  Total creditos:{' '}
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">
+                    {dialogVariant.totalCreditos}
+                  </span>
+                </p>
+                <p>Cursos incluidos: {dialogVariant.seleccion.length}</p>
+              </div>
+            )}
+            <form
+              className="mt-4 space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void confirmSave();
+              }}
+            >
+              <Input
+                label="Nombre"
+                value={saveDialog.name}
+                onChange={(e) =>
+                  setSaveDialog((prev) => ({ ...prev, name: e.target.value, error: null }))
+                }
+                placeholder="Opcion-20250205-120000"
+                disabled={saveDialog.isSaving}
+                error={saveDialog.error ?? undefined}
+                autoFocus
+              />
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={closeSaveDialog}
+                  disabled={saveDialog.isSaving}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" isLoading={saveDialog.isSaving}>
+                  Guardar
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

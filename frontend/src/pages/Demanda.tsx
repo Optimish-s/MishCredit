@@ -235,23 +235,22 @@ export default function Demanda() {
       <header>
         <h1 className="text-2xl font-bold">Demanda</h1>
       </header>
-
       <Card>
-              <CardHeader
-                title="ConfiguraciÃ³n de consulta"
-                description="Selecciona el modo de cÃ¡lculo, la agrupaciÃ³n y el filtro opcional de carrera."
-              />
-              <CardContent className="space-y-4">
-                {isRefreshing && !initialLoading && (
-                  <div className="flex items-center gap-2 rounded-xl bg-teal-50/70 px-3 py-2 text-xs font-semibold text-teal-700 shadow dark:bg-teal-500/10 dark:text-teal-200">
-                    <span className="inline-flex h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
-                    Actualizando demanda
-                  </div>
-                )}
-                <div className="grid gap-3 md:grid-cols-4 md:items-end">
-          <div className="md:col-span-1">
+        <CardHeader
+          title="Configuracion de consulta"
+          description="Selecciona el modo de calculo, la agrupacion y el filtro opcional de carrera."
+        />
+        <CardContent className="space-y-4">
+          {isRefreshing && !initialLoading && (
+            <div className="flex items-center gap-2 rounded-xl bg-teal-50/70 px-3 py-2 text-xs font-semibold text-teal-700 shadow dark:bg-teal-500/10 dark:text-teal-200">
+              <span className="inline-flex h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
+              Actualizando demanda
+            </div>
+          )}
+          <div className="grid gap-3 md:grid-cols-4 md:items-end">
+            <div className="md:col-span-1">
               <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Modo de cÃ¡lculo
+                Modo de calculo
               </p>
               <div className="mt-2 flex rounded-xl bg-slate-100 p-1 text-sm dark:bg-slate-800/80">
                 {(['favoritas', 'total'] as const).map((opcion) => {
@@ -289,14 +288,14 @@ export default function Demanda() {
                   setAgrupacion(e.target.value as DemandaAgrupacion);
                 }}
               >
-                <option value="codigo">CÃ³digo (curso)</option>
+                <option value="codigo">Codigo (curso)</option>
                 <option value="nrc">NRC (paralelo)</option>
               </select>
             </div>
 
             <div className="md:col-span-1">
               <Input
-                label="CÃ³digo de carrera (opcional)"
+                label="Codigo de carrera (opcional)"
                 value={codCarreraInput}
                 onChange={(e) => setCodCarreraInput(e.target.value)}
                 placeholder="8606"
@@ -348,7 +347,7 @@ export default function Demanda() {
         <>
           {datosOrdenados.length === 0 ? (
             <EmptyState
-              title="Sin informaciÃ³n disponible"
+              title="Sin informacion disponible"
               description="No hay suficientes proyecciones para calcular la demanda con los filtros seleccionados."
               actionLabel="Reintentar"
               onAction={() => {
@@ -439,9 +438,9 @@ export default function Demanda() {
                   <table className="min-w-full text-sm">
                     <thead className="sticky top-0 bg-white text-left text-xs uppercase text-slate-500 shadow dark:bg-slate-900 dark:text-slate-300">
                       <tr>
-                        <th className="px-3 py-2">CÃ³digo</th>
+                        <th className="px-3 py-2">Codigo</th>
                         <th className="px-3 py-2">Asignatura</th>
-                        <th className="px-3 py-2">{agrupacion === 'nrc' ? 'NRC' : 'Paralelo'}</th>
+                        {agrupacion === 'nrc' && <th className="px-3 py-2">NRC</th>}
                         <th className="px-3 py-2 text-right">Inscritos</th>
                       </tr>
                     </thead>
@@ -450,13 +449,15 @@ export default function Demanda() {
                         <tr key={`${row.codigo}-${row.paralelo ?? 'general'}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/60">
                           <td className="px-3 py-2 font-semibold text-slate-700 dark:text-slate-100">{row.codigo}</td>
                           <td className="px-3 py-2 text-slate-600 dark:text-slate-300">{row.asignatura}</td>
-                          <td className="px-3 py-2 text-slate-600 dark:text-slate-300">
-                            {row.paralelo ?? 'â€”'}
+                          {agrupacion === 'nrc' && (
+                            <td className="px-3 py-2 text-slate-600 dark:text-slate-300">
+                              {row.paralelo ?? '-'}
+                            </td>
+                          )}
+                          <td className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-100">
+                            {row.inscritos}
                           </td>
-                      <td className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-100">
-                        {row.inscritos}
-                      </td>
-                    </tr>
+                        </tr>
                       ))}
                     </tbody>
                   </table>

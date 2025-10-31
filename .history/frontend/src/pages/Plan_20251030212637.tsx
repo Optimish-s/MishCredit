@@ -254,8 +254,6 @@ export default function Plan() {
         items: variant.seleccion,
       }),
     })
-    // refrescar lista guardada para que la deteccion de duplicado funcione en intentos siguientes
-    await refreshSavedList()
   }
 
   async function confirmSave() {
@@ -285,7 +283,7 @@ export default function Plan() {
             codigo: it.codigo,
             creditos: it.creditos,
             nivel: it.nivel,
-            motivo: (it as any).motivo ?? 'PENDIENTE',
+            motivo: it.motivo,
             nrc: it.nrc,
           })),
           p.totalCreditos
@@ -293,6 +291,7 @@ export default function Plan() {
         return sig === signature
       })
       if (match) {
+        // mostrar prompt: esta proyeccion ya estaba guardada, deseas cambiar el nombre?
         setSaveDialog((prev) => ({
           ...prev,
           isSaving: false,
@@ -304,7 +303,6 @@ export default function Plan() {
         return
       }
     }
-    // validacion por nombre existente (flujo previo)
     if (saveDialog.mustRenameFrom && normalizedName === saveDialog.mustRenameFrom.toLowerCase()) {
       setSaveDialog((prev) => ({ ...prev, error: 'Elige un nombre diferente', isSaving: false }))
       return
@@ -368,53 +366,6 @@ export default function Plan() {
     }
     void loadMalla()
   }, [seleccion?.codCarrera, seleccion?.catalogo, toast])
-
-  // refresca la lista de proyecciones guardadas (con items) para deduplicar por contenido
-  async function refreshSavedList() {
-    if (!rut) {
-      setSavedNames([])
-      setSavedList([])
-      return
-    }
-    try {
-      const res = await api<
-        Array<{
-          _id: string
-          nombre?: string
-          totalCreditos: number
-          items: Array<{
-            codigo: string
-            asignatura: string
-            creditos: number
-            nivel: number
-            motivo?: string
-            nrc?: string
-          }>
-        }>
-      >(`/proyecciones/mias?rut=${encodeURIComponent(rut)}`)
-      const list = Array.isArray(res) ? res : []
-      setSavedList(
-        list as Array<{
-          _id: string
-          nombre?: string
-          totalCreditos: number
-          items: Array<{
-            codigo: string
-            asignatura: string
-            creditos: number
-            nivel: number
-            motivo: string
-            nrc?: string
-          }>
-        }>
-      )
-      const names = list.map((p) => (p.nombre || '').trim()).filter((name) => name.length > 0)
-      setSavedNames(names)
-    } catch (_err) {
-      setSavedNames([])
-      setSavedList([])
-    }
-  }
 
   useEffect(() => {
     let active = true

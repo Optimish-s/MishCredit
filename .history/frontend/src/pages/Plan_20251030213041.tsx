@@ -255,7 +255,7 @@ export default function Plan() {
       }),
     })
     // refrescar lista guardada para que la deteccion de duplicado funcione en intentos siguientes
-    await refreshSavedList()
+    await refreshSavedList();
   }
 
   async function confirmSave() {
@@ -368,53 +368,6 @@ export default function Plan() {
     }
     void loadMalla()
   }, [seleccion?.codCarrera, seleccion?.catalogo, toast])
-
-  // refresca la lista de proyecciones guardadas (con items) para deduplicar por contenido
-  async function refreshSavedList() {
-    if (!rut) {
-      setSavedNames([])
-      setSavedList([])
-      return
-    }
-    try {
-      const res = await api<
-        Array<{
-          _id: string
-          nombre?: string
-          totalCreditos: number
-          items: Array<{
-            codigo: string
-            asignatura: string
-            creditos: number
-            nivel: number
-            motivo?: string
-            nrc?: string
-          }>
-        }>
-      >(`/proyecciones/mias?rut=${encodeURIComponent(rut)}`)
-      const list = Array.isArray(res) ? res : []
-      setSavedList(
-        list as Array<{
-          _id: string
-          nombre?: string
-          totalCreditos: number
-          items: Array<{
-            codigo: string
-            asignatura: string
-            creditos: number
-            nivel: number
-            motivo: string
-            nrc?: string
-          }>
-        }>
-      )
-      const names = list.map((p) => (p.nombre || '').trim()).filter((name) => name.length > 0)
-      setSavedNames(names)
-    } catch (_err) {
-      setSavedNames([])
-      setSavedList([])
-    }
-  }
 
   useEffect(() => {
     let active = true

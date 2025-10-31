@@ -255,7 +255,7 @@ export default function Plan() {
       }),
     })
     // refrescar lista guardada para que la deteccion de duplicado funcione en intentos siguientes
-    await refreshSavedList()
+    await refreshSavedList();
   }
 
   async function confirmSave() {
@@ -281,47 +281,42 @@ export default function Plan() {
       const signature = buildSignatureFromVariant(currentVariant)
       const match = savedList.find((p) => {
         const sig = buildSignatureFromItems(
-          p.items.map((it) => ({
-            codigo: it.codigo,
-            creditos: it.creditos,
-            nivel: it.nivel,
-            motivo: (it as any).motivo ?? 'PENDIENTE',
-            nrc: it.nrc,
-          })),
-          p.totalCreditos
-        )
-        return sig === signature
-      })
-      if (match) {
-        setSaveDialog((prev) => ({
-          ...prev,
-          isSaving: false,
-          duplicatePromptName: null,
-          mustRenameFrom: null,
-          contentDuplicateId: match._id,
-          contentDuplicateCurrentName: match.nombre || match._id,
-        }))
-        return
-      }
-    }
-    // validacion por nombre existente (flujo previo)
-    if (saveDialog.mustRenameFrom && normalizedName === saveDialog.mustRenameFrom.toLowerCase()) {
-      setSaveDialog((prev) => ({ ...prev, error: 'Elige un nombre diferente', isSaving: false }))
-      return
-    }
-    const exists = savedNames.some((name) => name.toLowerCase() === normalizedName)
-    if (exists) {
-      setSaveDialog((prev) => ({
-        ...prev,
-        duplicatePromptName: trimmedName,
-        error: null,
-        isSaving: false,
-      }))
-      return
-    }
-    setSaveDialog((prev) => ({ ...prev, isSaving: true, error: null, mustRenameFrom: null }))
-    try {
-      await guardarVariant(saveDialog.variantIndex, saveDialog.favorite, trimmedName)
+          // refresca la lista de proyecciones guardadas (con items) para deduplicar por contenido
+          async function refreshSavedList() {
+            if (!rut) {
+              setSavedNames([]);
+              setSavedList([]);
+              return;
+            }
+            try {
+              const res = await api<
+                Array<{
+                  _id: string;
+                  nombre?: string;
+                  totalCreditos: number;
+                  items: Array<{
+                    codigo: string;
+                    asignatura: string;
+                    creditos: number;
+                    nivel: number;
+                    motivo?: string;
+                    nrc?: string;
+                  }>;
+                }>
+              >(`/proyecciones/mias?rut=${encodeURIComponent(rut)}`);
+              const list = Array.isArray(res) ? res : [];
+              setSavedList(list as Array<{ _id: string; nombre?: string; totalCreditos: number; items: Array<{ codigo: string; asignatura: string; creditos: number; nivel: number; motivo: string; nrc?: string }>; }>);
+              const names = list.map((p) => (p.nombre || '').trim()).filter((name) => name.length > 0);
+              setSavedNames(names);
+            } catch (_err) {
+              setSavedNames([]);
+              setSavedList([]);
+            }
+          }
+
+          useEffect(() => {
+            void refreshSavedList();
+          }, [rut]);
       toast({
         type: 'success',
         message: saveDialog.favorite ? 'Proyeccion favorita guardada' : 'Proyeccion guardada',
@@ -368,53 +363,6 @@ export default function Plan() {
     }
     void loadMalla()
   }, [seleccion?.codCarrera, seleccion?.catalogo, toast])
-
-  // refresca la lista de proyecciones guardadas (con items) para deduplicar por contenido
-  async function refreshSavedList() {
-    if (!rut) {
-      setSavedNames([])
-      setSavedList([])
-      return
-    }
-    try {
-      const res = await api<
-        Array<{
-          _id: string
-          nombre?: string
-          totalCreditos: number
-          items: Array<{
-            codigo: string
-            asignatura: string
-            creditos: number
-            nivel: number
-            motivo?: string
-            nrc?: string
-          }>
-        }>
-      >(`/proyecciones/mias?rut=${encodeURIComponent(rut)}`)
-      const list = Array.isArray(res) ? res : []
-      setSavedList(
-        list as Array<{
-          _id: string
-          nombre?: string
-          totalCreditos: number
-          items: Array<{
-            codigo: string
-            asignatura: string
-            creditos: number
-            nivel: number
-            motivo: string
-            nrc?: string
-          }>
-        }>
-      )
-      const names = list.map((p) => (p.nombre || '').trim()).filter((name) => name.length > 0)
-      setSavedNames(names)
-    } catch (_err) {
-      setSavedNames([])
-      setSavedList([])
-    }
-  }
 
   useEffect(() => {
     let active = true

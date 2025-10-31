@@ -255,7 +255,7 @@ export default function Plan() {
       }),
     })
     // refrescar lista guardada para que la deteccion de duplicado funcione en intentos siguientes
-    await refreshSavedList()
+    await refreshSavedList();
   }
 
   async function confirmSave() {

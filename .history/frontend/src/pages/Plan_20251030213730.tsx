@@ -154,39 +154,15 @@ export default function Plan() {
   const PROJECTION_OPTIONS_STUB: ProjectionResult[] = [
     {
       seleccion: [
-        {
-          codigo: 'DCCB-00106',
-          asignatura: 'Calculo I',
-          creditos: 6,
-          nivel: 1,
-          motivo: 'PENDIENTE',
-        },
-        {
-          codigo: 'DCCB-00107',
-          asignatura: 'Algebra I',
-          creditos: 6,
-          nivel: 1,
-          motivo: 'PENDIENTE',
-        },
+        { codigo: 'DCCB-00106', asignatura: 'Calculo I', creditos: 6, nivel: 1, motivo: 'PENDIENTE' },
+        { codigo: 'DCCB-00107', asignatura: 'Algebra I', creditos: 6, nivel: 1, motivo: 'PENDIENTE' },
       ],
       totalCreditos: 12,
     },
     {
       seleccion: [
-        {
-          codigo: 'DCCB-00106',
-          asignatura: 'Calculo I',
-          creditos: 6,
-          nivel: 1,
-          motivo: 'PENDIENTE',
-        },
-        {
-          codigo: 'DCCB-00264',
-          asignatura: 'Estructuras de Datos',
-          creditos: 6,
-          nivel: 3,
-          motivo: 'REPROBADO',
-        },
+        { codigo: 'DCCB-00106', asignatura: 'Calculo I', creditos: 6, nivel: 1, motivo: 'PENDIENTE' },
+        { codigo: 'DCCB-00264', asignatura: 'Estructuras de Datos', creditos: 6, nivel: 3, motivo: 'REPROBADO' },
       ],
       totalCreditos: 12,
     },
@@ -623,8 +599,18 @@ export default function Plan() {
       }
       console.log('Payload', payload)
 
-      const res = await apiPost<ProjectionResult>('/proyecciones/generar', payload, {
-        timeoutMs: 7000,
+      const res = await api<ProjectionResult>('/proyecciones/generar', {
+        method: 'POST',
+        body: JSON.stringify({
+          rut,
+          codCarrera: seleccion.codCarrera,
+          catalogo: seleccion.catalogo,
+          topeCreditos: tope,
+          prioritarios,
+          maximizarCreditos,
+          priorizarReprobados,
+          ordenPrioridades: ordenEtiquetas,
+        }),
       })
 
       // Store the single projection in variants array
@@ -633,10 +619,10 @@ export default function Plan() {
 
       toast({ type: 'success', message: 'Proyección generada' })
     } catch (err) {
-      // Fallback a datos locales si el backend no responde
-      setVariants([PROJECTION_STUB])
-      setActiveIndex(0)
-      toast({ type: 'info', message: 'Backend no disponible, usando datos demo' })
+      toast({
+        type: 'error',
+        message: (err as Error).message || 'No pudimos generar la proyección',
+      })
     } finally {
       setLoading(false)
     }
@@ -646,22 +632,20 @@ export default function Plan() {
     if (!seleccion) return
     setLoading(true)
     try {
-      const payload = {
-        rut,
-        codCarrera: seleccion.codCarrera,
-        catalogo: seleccion.catalogo,
-        topeCreditos: tope,
-        prioritarios,
-        maximizarCreditos,
-        priorizarReprobados,
-        ordenPrioridades: ordenEtiquetas,
-        maxOptions: 5,
-      }
-      const res = await apiPost<{ opciones: ProjectionResult[] }>(
-        '/proyecciones/generar-opciones',
-        payload,
-        { timeoutMs: 7000 }
-      )
+      const res = await api<{ opciones: ProjectionResult[] }>('/proyecciones/generar-opciones', {
+        method: 'POST',
+        body: JSON.stringify({
+          rut,
+          codCarrera: seleccion.codCarrera,
+          catalogo: seleccion.catalogo,
+          topeCreditos: tope,
+          prioritarios,
+          maximizarCreditos,
+          priorizarReprobados,
+          ordenPrioridades: ordenEtiquetas,
+          maxOptions: 5,
+        }),
+      })
       setVariants(res.opciones)
       setActiveIndex(res.opciones.length ? 0 : null)
       toast({
@@ -671,10 +655,7 @@ export default function Plan() {
           : 'No hay opciones adicionales',
       })
     } catch (err) {
-      // Fallback a datos locales si el backend no responde
-      setVariants(PROJECTION_OPTIONS_STUB)
-      setActiveIndex(PROJECTION_OPTIONS_STUB.length ? 0 : null)
-      toast({ type: 'info', message: 'Backend no disponible, usando opciones demo' })
+      toast({ type: 'error', message: (err as Error).message || 'No pudimos generar opciones' })
     } finally {
       setLoading(false)
     }

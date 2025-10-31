@@ -154,39 +154,15 @@ export default function Plan() {
   const PROJECTION_OPTIONS_STUB: ProjectionResult[] = [
     {
       seleccion: [
-        {
-          codigo: 'DCCB-00106',
-          asignatura: 'Calculo I',
-          creditos: 6,
-          nivel: 1,
-          motivo: 'PENDIENTE',
-        },
-        {
-          codigo: 'DCCB-00107',
-          asignatura: 'Algebra I',
-          creditos: 6,
-          nivel: 1,
-          motivo: 'PENDIENTE',
-        },
+        { codigo: 'DCCB-00106', asignatura: 'Calculo I', creditos: 6, nivel: 1, motivo: 'PENDIENTE' },
+        { codigo: 'DCCB-00107', asignatura: 'Algebra I', creditos: 6, nivel: 1, motivo: 'PENDIENTE' },
       ],
       totalCreditos: 12,
     },
     {
       seleccion: [
-        {
-          codigo: 'DCCB-00106',
-          asignatura: 'Calculo I',
-          creditos: 6,
-          nivel: 1,
-          motivo: 'PENDIENTE',
-        },
-        {
-          codigo: 'DCCB-00264',
-          asignatura: 'Estructuras de Datos',
-          creditos: 6,
-          nivel: 3,
-          motivo: 'REPROBADO',
-        },
+        { codigo: 'DCCB-00106', asignatura: 'Calculo I', creditos: 6, nivel: 1, motivo: 'PENDIENTE' },
+        { codigo: 'DCCB-00264', asignatura: 'Estructuras de Datos', creditos: 6, nivel: 3, motivo: 'REPROBADO' },
       ],
       totalCreditos: 12,
     },

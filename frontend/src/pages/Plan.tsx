@@ -24,12 +24,14 @@ type ProjectionCourse = {
 type ProjectionResult = {
   seleccion: ProjectionCourse[];
   totalCreditos: number;
-  // reglas: {
-  //   topeCreditos: number;
-  //   verificaPrereq: true;
-  //   priorizarReprobados: boolean;
-  //   maximizarCreditos: boolean;
-  // };
+  reglas: {
+    topeCreditos: number;
+    // verificaPrereq: true;
+    priorizarReprobados: boolean;
+    maximizarCreditos: boolean;
+    prioritarios?: string[];
+    ordenPrioridades: string[];
+  };
 };
 
 type Course = {
@@ -225,20 +227,21 @@ export default function Plan() {
   }
 
   async function generarOpciones() {
-    if (!seleccion) return;
+    if (!seleccion || activeIndex === null) return;
     setLoading(true);
     try {
+      const activeVariant = variants[activeIndex];
       const res = await api<{ opciones: ProjectionResult[] }>('/proyecciones/generar-opciones', {
         method: 'POST',
         body: JSON.stringify({
           rut,
           codCarrera: seleccion.codCarrera,
           catalogo: seleccion.catalogo,
-          topeCreditos: tope,
-          prioritarios,
-          maximizarCreditos,
-          priorizarReprobados,
-          ordenPrioridades: ordenEtiquetas,
+          topeCreditos: activeVariant.reglas.topeCreditos,
+          prioritarios: activeVariant.reglas.prioritarios || [],
+          maximizarCreditos: activeVariant.reglas.maximizarCreditos,
+          priorizarReprobados: activeVariant.reglas.priorizarReprobados,
+          ordenPrioridades: activeVariant.reglas.ordenPrioridades,
           maxOptions: 5,
         }),
       });
@@ -486,7 +489,7 @@ export default function Plan() {
         <Button onClick={generar} isLoading={loading}>
           Generar proyección
         </Button>
-        {variants.length > 0 && (
+        {variants.length == 1 && (
           <Button variant="secondary" onClick={generarOpciones} disabled={loading}>
             Generar variantes
           </Button>
@@ -699,4 +702,3 @@ export default function Plan() {
     </div>
   );
 }
-

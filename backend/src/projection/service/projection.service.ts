@@ -69,7 +69,7 @@ export class ProjectionService {
     };
   }
   
-/*
+/* 
   static buildOptions(input: ProjectionInput, maxOptions): ProjectionResult[] {
     const { malla, avance, topeCreditos, ordenPrioridades, prioritarios, priorizarReprobados, maximizarCreditos } = input;
     

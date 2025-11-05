@@ -1,4 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import RangeSlider from 'react-range-slider-input';
+import 'react-range-slider-input/dist/style.css';
+import './styles/range-slider.css';
 import { api } from '../api/client';
 import { useRequireRut } from '../hooks/useRequireRut';
 import { useApp } from '../store/appStore';
@@ -61,6 +64,8 @@ export default function Plan() {
 
   const [maximizarCreditos, setMaximizarCreditos] = useState(false);
   const [priorizarReprobados, setPriorizarReprobados] = useState(false);
+
+  const [creditRange, setCreditRange] = useState<[number, number]>([0, 8]);
 
   useEffect(() => {
     async function loadMalla() {
@@ -295,31 +300,61 @@ export default function Plan() {
       {(() => {
         const showSidebar = etiquetasExtras.length > 0;
         return (
-          <section className={`grid gap-3 ${showSidebar ? 'md:grid-cols-10' : 'md:grid-cols-8'}`}>
+          <section className={`grid gap-3 ${showSidebar ? 'grid-cols-5' : 'grid-cols-4'}`}>
             {/* area de parámetros: mantiene la grid de x columnas internamente */}
-            <div className="md:col-span-8">
-              <div className="grid gap-3 md:grid-cols-8">
+            <div className="col-span-4">
+              <div className="grid gap-3 grid-cols-2">
+
+                <div className="grid gap-3 grid-cols-8">
+
                 {/* Tope de créditos */}
-                <Card className="p-4 col-span-2">
+                <Card className="grid p-4 col-span-3">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Tope de créditos
                   </div>
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex items-start gap-2">
                     <input
                       type="number"
                       min={10}
                       max={30}
                       value={tope}
                       onChange={(e) => setTope(Number(e.target.value))}
-                      className="w-24 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                      className="w-[50%] max-w-20 min-w-14 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                     />
-                    <span className="text-sm text-slate-600 dark:text-slate-300">SCT</span>
+                    <span className="mb-2 self-end text-sm text-slate-600 dark:text-slate-300">SCT</span>
                   </div>
                 </Card>
 
+                {/* Rango Creditor por Ramo */}
+                <Card className="grid p-4 col-span-5">
+                  <div className="items-start">
+                    <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                      Creditos por Ramo
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Limita el rango de creditos por ramo.
+                    </div>
+
+                    <RangeSlider
+                      id='range-slider-credits'
+                      className="mt-4"
+                      min={0}
+                      max={8}
+                      step={1}
+                      onInput={setCreditRange}
+                      defaultValue={creditRange}
+                    />
+                    
+                  </div>
+                </Card>
+
+                </div>
+
+                <div className="grid gap-3 grid-cols-2">
+
                 {/* Maximizar créditos */}
-                <Card className="p-4 col-span-3">
-                  <div className="flex items-center justify-between">
+                <Card className="grid p-4 col-span-1">
+                  <div className="flex items-start justify-between">
                     <div>
                       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         Maximizar créditos
@@ -328,18 +363,20 @@ export default function Plan() {
                         Intenta usar el máximo posible del tope definido.
                       </div>
                     </div>
+                    <div className="flex-shrink-0 flex items-start ml-1">
                     <input
                       type="checkbox"
                       checked={maximizarCreditos}
                       onChange={(e) => setMaximizarCreditos(e.target.checked)}
                       className="h-5 w-5 accent-teal-600"
                     />
+                    </div>
                   </div>
                 </Card>
 
                 {/* Priorizar reprobados */}
-                <Card className="p-4 col-span-3">
-                  <div className="flex items-center justify-between">
+                <Card className="grid p-4 col-span-1">
+                  <div className="flex items-start justify-between">
                     <div>
                       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         Priorizar reprobados
@@ -348,17 +385,21 @@ export default function Plan() {
                         Da preferencia a cursos reprobados.
                       </div>
                     </div>
+                    <div className="flex-shrink-0 flex items-start ml-1">
                     <input
                       type="checkbox"
                       checked={priorizarReprobados}
                       onChange={(e) => setPriorizarReprobados(e.target.checked)}
                       className="h-5 w-5 accent-teal-600"
                     />
+                    </div>
                   </div>
                 </Card>
 
+                </div>
+
                 {/* Prioritarios (usa X columnas dentro del area de parámetros) */}
-                <Card className="p-4 col-span-8">
+                <Card className="grid p-4 col-span-2">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Prioritarios Personalizados
                   </div>
@@ -386,12 +427,13 @@ export default function Plan() {
                     </div>
                   )}
                 </Card>
+
               </div>
             </div>
 
             {/* Sidebar de etiquetas: aparece sólo si hay etiquetas extras */}
             {showSidebar && (
-              <aside className="col-span-2">
+              <aside className="col-span-1">
                 <Card className="h-full sticky top-6 p-3">
                   <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Ordenar Prioridades

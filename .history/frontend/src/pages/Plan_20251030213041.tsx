@@ -3,7 +3,7 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api, apiPost } from '../api/client'
+import { api } from '../api/client'
 import { useConfirm } from '../components/Confirm'
 import { useToast } from '../components/Toast'
 import { Button } from '../components/ui/Button'
@@ -143,55 +143,6 @@ export default function Plan() {
     })
   }
 
-  // stubs locales para demo cuando backend no responde
-  const PROJECTION_STUB: ProjectionResult = {
-    seleccion: [
-      { codigo: 'DCCB-00106', asignatura: 'Calculo I', creditos: 6, nivel: 1, motivo: 'PENDIENTE' },
-      { codigo: 'DCCB-00107', asignatura: 'Algebra I', creditos: 6, nivel: 1, motivo: 'PENDIENTE' },
-    ],
-    totalCreditos: 12,
-  }
-  const PROJECTION_OPTIONS_STUB: ProjectionResult[] = [
-    {
-      seleccion: [
-        {
-          codigo: 'DCCB-00106',
-          asignatura: 'Calculo I',
-          creditos: 6,
-          nivel: 1,
-          motivo: 'PENDIENTE',
-        },
-        {
-          codigo: 'DCCB-00107',
-          asignatura: 'Algebra I',
-          creditos: 6,
-          nivel: 1,
-          motivo: 'PENDIENTE',
-        },
-      ],
-      totalCreditos: 12,
-    },
-    {
-      seleccion: [
-        {
-          codigo: 'DCCB-00106',
-          asignatura: 'Calculo I',
-          creditos: 6,
-          nivel: 1,
-          motivo: 'PENDIENTE',
-        },
-        {
-          codigo: 'DCCB-00264',
-          asignatura: 'Estructuras de Datos',
-          creditos: 6,
-          nivel: 3,
-          motivo: 'REPROBADO',
-        },
-      ],
-      totalCreditos: 12,
-    },
-  ]
-
   function closeSaveDialog() {
     if (saveDialog.isSaving) return
     setSaveDialog(createInitialSaveDialog())
@@ -304,7 +255,7 @@ export default function Plan() {
       }),
     })
     // refrescar lista guardada para que la deteccion de duplicado funcione en intentos siguientes
-    await refreshSavedList()
+    await refreshSavedList();
   }
 
   async function confirmSave() {
@@ -417,53 +368,6 @@ export default function Plan() {
     }
     void loadMalla()
   }, [seleccion?.codCarrera, seleccion?.catalogo, toast])
-
-  // refresca la lista de proyecciones guardadas (con items) para deduplicar por contenido
-  async function refreshSavedList() {
-    if (!rut) {
-      setSavedNames([])
-      setSavedList([])
-      return
-    }
-    try {
-      const res = await api<
-        Array<{
-          _id: string
-          nombre?: string
-          totalCreditos: number
-          items: Array<{
-            codigo: string
-            asignatura: string
-            creditos: number
-            nivel: number
-            motivo?: string
-            nrc?: string
-          }>
-        }>
-      >(`/proyecciones/mias?rut=${encodeURIComponent(rut)}`)
-      const list = Array.isArray(res) ? res : []
-      setSavedList(
-        list as Array<{
-          _id: string
-          nombre?: string
-          totalCreditos: number
-          items: Array<{
-            codigo: string
-            asignatura: string
-            creditos: number
-            nivel: number
-            motivo: string
-            nrc?: string
-          }>
-        }>
-      )
-      const names = list.map((p) => (p.nombre || '').trim()).filter((name) => name.length > 0)
-      setSavedNames(names)
-    } catch (_err) {
-      setSavedNames([])
-      setSavedList([])
-    }
-  }
 
   useEffect(() => {
     let active = true
@@ -623,8 +527,18 @@ export default function Plan() {
       }
       console.log('Payload', payload)
 
-      const res = await apiPost<ProjectionResult>('/proyecciones/generar', payload, {
-        timeoutMs: 7000,
+      const res = await api<ProjectionResult>('/proyecciones/generar', {
+        method: 'POST',
+        body: JSON.stringify({
+          rut,
+          codCarrera: seleccion.codCarrera,
+          catalogo: seleccion.catalogo,
+          topeCreditos: tope,
+          prioritarios,
+          maximizarCreditos,
+          priorizarReprobados,
+          ordenPrioridades: ordenEtiquetas,
+        }),
       })
 
       // Store the single projection in variants array
@@ -633,10 +547,10 @@ export default function Plan() {
 
       toast({ type: 'success', message: 'Proyección generada' })
     } catch (err) {
-      // Fallback a datos locales si el backend no responde
-      setVariants([PROJECTION_STUB])
-      setActiveIndex(0)
-      toast({ type: 'info', message: 'Backend no disponible, usando datos demo' })
+      toast({
+        type: 'error',
+        message: (err as Error).message || 'No pudimos generar la proyección',
+      })
     } finally {
       setLoading(false)
     }
@@ -646,22 +560,20 @@ export default function Plan() {
     if (!seleccion) return
     setLoading(true)
     try {
-      const payload = {
-        rut,
-        codCarrera: seleccion.codCarrera,
-        catalogo: seleccion.catalogo,
-        topeCreditos: tope,
-        prioritarios,
-        maximizarCreditos,
-        priorizarReprobados,
-        ordenPrioridades: ordenEtiquetas,
-        maxOptions: 5,
-      }
-      const res = await apiPost<{ opciones: ProjectionResult[] }>(
-        '/proyecciones/generar-opciones',
-        payload,
-        { timeoutMs: 7000 }
-      )
+      const res = await api<{ opciones: ProjectionResult[] }>('/proyecciones/generar-opciones', {
+        method: 'POST',
+        body: JSON.stringify({
+          rut,
+          codCarrera: seleccion.codCarrera,
+          catalogo: seleccion.catalogo,
+          topeCreditos: tope,
+          prioritarios,
+          maximizarCreditos,
+          priorizarReprobados,
+          ordenPrioridades: ordenEtiquetas,
+          maxOptions: 5,
+        }),
+      })
       setVariants(res.opciones)
       setActiveIndex(res.opciones.length ? 0 : null)
       toast({
@@ -671,10 +583,7 @@ export default function Plan() {
           : 'No hay opciones adicionales',
       })
     } catch (err) {
-      // Fallback a datos locales si el backend no responde
-      setVariants(PROJECTION_OPTIONS_STUB)
-      setActiveIndex(PROJECTION_OPTIONS_STUB.length ? 0 : null)
-      toast({ type: 'info', message: 'Backend no disponible, usando opciones demo' })
+      toast({ type: 'error', message: (err as Error).message || 'No pudimos generar opciones' })
     } finally {
       setLoading(false)
     }

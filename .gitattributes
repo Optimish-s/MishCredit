@@ -1,0 +1,15 @@
+# Enforce LF line endings for specific files to avoid CRLF diffs on Windows
+* text=auto
+
+# Force LF for problematic files listed by the user
+backend/requests/api.http text eol=lf
+backend/src/db/projection.repository.ts text eol=lf
+backend/src/projection/dto/projection.dto.ts text eol=lf
+backend/src/projection/projection.controller.ts text eol=lf
+frontend.env text eol=lf
+frontend.env.example text eol=lf
+frontend/src/pages/Demanda.tsx text eol=lf
+frontend/src/services/api/demanda.ts text eol=lf
+
+# Ensure the attributes file itself uses LF
+.gitattributes text eol=lf

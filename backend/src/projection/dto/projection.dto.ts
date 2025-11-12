@@ -1,5 +1,13 @@
 import { Transform, Type } from 'class-transformer';
-import { IsString, IsNotEmpty, IsNumber, Min, IsOptional, IsBoolean } from "class-validator";
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  Min,
+  IsOptional,
+  IsBoolean,
+  IsIn,
+} from 'class-validator';
 
 export class GenerarProyeccionDto {
   @IsString() @IsNotEmpty() rut!: string;
@@ -21,4 +29,10 @@ export class GuardarProyeccionDto extends GenerarProyeccionDto {
 
 export class FavoritaDto {
   @IsString() @IsNotEmpty() rut!: string;
+}
+
+export class DemandaQueryDto {
+  @IsOptional() @IsString() codCarrera?: string;
+  @IsOptional() @IsString() @IsIn(['codigo', 'nrc']) por?: 'codigo' | 'nrc';
+  @IsOptional() @IsString() @IsIn(['favoritas', 'total']) modo?: 'favoritas' | 'total';
 }

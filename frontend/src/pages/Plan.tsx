@@ -1,22 +1,22 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
-import RangeSlider from 'react-range-slider-input';
+import { FormEvent, useEffect, useMemo, useState } from 'react'
+import RangeSlider from 'react-range-slider-input'
 import { useNavigate } from 'react-router-dom'
 import { api, apiPost } from '../api/client'
-import { useRequireRut } from '../hooks/useRequireRut';
-import { useApp } from '../store/appStore';
+import { useRequireRut } from '../hooks/useRequireRut'
+import { useApp } from '../store/appStore'
 import { useConfirm } from '../components/Confirm'
-import { useToast } from '../components/Toast';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
+import { useToast } from '../components/Toast'
+import { Button } from '../components/ui/Button'
+import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
-import { EmptyState } from '../components/ui/EmptyState';
-import { LoadingState } from '../components/ui/LoadingState';
-import { SortableItem } from '../components/ui/SortableItem';
+import { EmptyState } from '../components/ui/EmptyState'
+import { LoadingState } from '../components/ui/LoadingState'
+import { SortableItem } from '../components/ui/SortableItem'
 import { closestCenter, DndContext } from '@dnd-kit/core'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import 'react-range-slider-input/dist/style.css';
-import './styles/range-slider.css';
+import 'react-range-slider-input/dist/style.css'
+import './styles/range-slider.css'
 
 type ProjectionCourse = {
   codigo: string
@@ -311,7 +311,7 @@ export default function Plan() {
       setSaveDialog((prev) => ({ ...prev, error: 'El nombre no puede superar 60 caracteres' }))
       return
     }
-    const normalizedName = trimmedName.toLowerCase()
+    const normalizedName = trimmedName.toLowerCase();
 
     const [creditRange, setCreditRange] = useState<[number, number]>([0, 8]);
 

@@ -24,6 +24,8 @@ export default function Projections() {
 
   const [list, setList] = useState<ProjectionSaved[]>([]);
   const [loading, setLoading] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState<string | null>(null);
+  const [favoriteError, setFavoriteError] = useState<{ id: string; message: string } | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [editing, setEditing] = useState<Record<string, string>>({});
 
@@ -33,6 +35,8 @@ export default function Projections() {
     try {
       const data = await api<ProjectionSaved[]>(`/proyecciones/mias?rut=${encodeURIComponent(rut)}`);
       setList(Array.isArray(data) ? data : []);
+      setFavoriteError(null);
+      setFavoriteLoading(null);
     } catch (err) {
       toast({ type: 'error', message: (err as Error).message || 'No pudimos cargar tus proyecciones' });
     } finally {
@@ -62,19 +66,36 @@ export default function Projections() {
     return [favorite, ...list.filter((p) => p._id !== favorite._id)];
   }, [list]);
 
-  async function marcarFavorita(id: string) {
-    const ok = await confirm({
-      title: 'Marcar como favorita',
-      description: 'Reemplaza la proyeccion favorita actual. Continuar?',
-    });
-    if (!ok) return;
-    await api(`/proyecciones/favorita/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ rut }),
-    });
-    toast({ type: 'success', message: 'Favorita actualizada' });
-    void load();
+  async function marcarFavorita(id: string, opts?: { skipConfirm?: boolean }) {
+    if (!opts?.skipConfirm) {
+      const ok = await confirm({
+        title: 'Marcar como favorita',
+        description: 'Reemplaza la proyeccion favorita actual. Continuar?',
+      });
+      if (!ok) return;
+    }
+    setFavoriteLoading(id);
+    setFavoriteError(null);
+    try {
+      await api(`/proyecciones/favorita/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ rut }),
+      });
+      toast({ type: 'success', message: 'Favorita actualizada' });
+      setFavoriteError(null);
+      await load();
+    } catch (err) {
+      const raw = err instanceof Error ? err.message : String(err ?? '');
+      const detail = raw.trim();
+      const fallback = 'No se pudo marcar favorita. Reintenta.';
+      const composed = detail && detail !== fallback ? fallback + ' Detalle: ' + detail : fallback;
+      setFavoriteError({ id, message: composed });
+      toast({ type: 'error', message: composed });
+    } finally {
+      setFavoriteLoading((current) => (current === id ? null : current));
+    }
   }
+
 
   async function eliminar(id: string) {
     const ok = await confirm({
@@ -195,13 +216,31 @@ export default function Projections() {
                 )}
 
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
-                  <Button variant="primary" size="sm" onClick={() => marcarFavorita(proj._id)}>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => void marcarFavorita(proj._id)}
+                    isLoading={favoriteLoading === proj._id}
+                  >
                     Marcar favorita
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => eliminar(proj._id)}>
                     Eliminar
                   </Button>
                 </div>
+                {favoriteError?.id === proj._id && (
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/20 dark:text-amber-100">
+                    <span>{favoriteError.message}</span>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => void marcarFavorita(proj._id, { skipConfirm: true })}
+                      isLoading={favoriteLoading === proj._id}
+                    >
+                      Reintentar
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           );

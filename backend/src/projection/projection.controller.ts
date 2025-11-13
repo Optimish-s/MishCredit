@@ -21,7 +21,7 @@ import {
 } from 'class-validator';
 
  
-import { GenerarProyeccionDto, GuardarProyeccionDto, FavoritaDto } from './dto/projection.dto';
+import { GenerarProyeccionDto, GuardarProyeccionDto, FavoritaDto, DemandaQueryDto } from './dto/projection.dto';
 import { ProjectionRepository } from 'src/db/projection.repository';
 import { GenerateProjectionOptionsUseCase } from 'src/projection/use-cases/generate-projection-options.usecase';
 import { GenerateProjectionUseCase } from 'src/projection/use-cases/generate-projection.usecase';
@@ -139,17 +139,16 @@ export class ProjectionsController {
   }
 
   @Get('demanda/agregada')
-  @ApiOperation({ summary: 'Demanda agregada por codigo o nrc de favoritas' })
+  @ApiOperation({ summary: 'Demanda agregada por codigo o nrc (todas o favoritas)' })
   @ApiQuery({ name: 'codCarrera', required: false })
   @ApiQuery({
     name: 'por',
     required: false,
     description: 'usar "nrc" para agrupar por nrc',
   })
-  demanda(
-    @Query('codCarrera') codCarrera?: string,
-    @Query('por') por?: string,
-  ) {
-    return this.repo.demandByCourse(codCarrera, por === 'nrc');
+  demanda(@Query() query: DemandaQueryDto) {
+    const agrupaPorNrc = query.por === 'nrc';
+    const onlyFavorites = query.modo === 'total' ? false : true;
+    return this.repo.demandByCourse(query.codCarrera, agrupaPorNrc, onlyFavorites);
   }
 }

@@ -313,8 +313,6 @@ export default function Plan() {
     }
     const normalizedName = trimmedName.toLowerCase();
 
-    const [creditRange, setCreditRange] = useState<[number, number]>([0, 8]);
-
     // chequeo: duplicado por contenido (independiente del nombre)
     const currentVariant = variants[saveDialog.variantIndex]
     if (currentVariant) {

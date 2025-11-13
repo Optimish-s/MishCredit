@@ -12,7 +12,6 @@ import { Input } from '../components/ui/Input'
 import { EmptyState } from '../components/ui/EmptyState';
 import { LoadingState } from '../components/ui/LoadingState';
 import { SortableItem } from '../components/ui/SortableItem';
-import { useRequireRut } from '../hooks/useRequireRut'
 import { closestCenter, DndContext } from '@dnd-kit/core'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -97,6 +96,9 @@ export default function Plan() {
 
   const [maximizarCreditos, setMaximizarCreditos] = useState(false)
   const [priorizarReprobados, setPriorizarReprobados] = useState(false)
+
+  const [creditRange, setCreditRange] = useState<[number, number]>([0, 8]);
+
   const [saveDialog, setSaveDialog] = useState<SaveDialogState>(() => createInitialSaveDialog())
   const [savedNames, setSavedNames] = useState<string[]>([])
   // lista completa para deduplicar por contenido
@@ -151,52 +153,33 @@ export default function Plan() {
 
   // stubs locales para demo cuando backend no responde
   const PROJECTION_STUB: ProjectionResult = {
-    seleccion: [
-      { codigo: 'DCCB-00106', asignatura: 'Calculo I', creditos: 6, nivel: 1, motivo: 'PENDIENTE' },
-      { codigo: 'DCCB-00107', asignatura: 'Algebra I', creditos: 6, nivel: 1, motivo: 'PENDIENTE' },
-    ],
-    totalCreditos: 12,
-  }
+      seleccion: [
+        { codigo: 'MAT101', asignatura: 'Cálculo I', creditos: 6, nivel: 1, motivo: 'PENDIENTE' },
+      ],
+      totalCreditos: 6,
+      reglas: {
+        topeCreditos: 6,
+        priorizarReprobados: false,
+        maximizarCreditos: false,
+        prioritarios: [],
+        ordenPrioridades: ['NIVEL MAS BAJO'],
+      }
+    }
   const PROJECTION_OPTIONS_STUB: ProjectionResult[] = [
-    {
-      seleccion: [
-        {
-          codigo: 'DCCB-00106',
-          asignatura: 'Calculo I',
-          creditos: 6,
-          nivel: 1,
-          motivo: 'PENDIENTE',
-        },
-        {
-          codigo: 'DCCB-00107',
-          asignatura: 'Algebra I',
-          creditos: 6,
-          nivel: 1,
-          motivo: 'PENDIENTE',
-        },
-      ],
-      totalCreditos: 12,
-    },
-    {
-      seleccion: [
-        {
-          codigo: 'DCCB-00106',
-          asignatura: 'Calculo I',
-          creditos: 6,
-          nivel: 1,
-          motivo: 'PENDIENTE',
-        },
-        {
-          codigo: 'DCCB-00264',
-          asignatura: 'Estructuras de Datos',
-          creditos: 6,
-          nivel: 3,
-          motivo: 'REPROBADO',
-        },
-      ],
-      totalCreditos: 12,
-    },
-  ]
+      {
+        seleccion: [
+          { codigo: 'MAT101', asignatura: 'Cálculo I', creditos: 6, nivel: 1, motivo: 'PENDIENTE' },
+        ],
+        totalCreditos: 6,
+        reglas: {
+          topeCreditos: 6,
+          priorizarReprobados: false,
+          maximizarCreditos: false,
+          prioritarios: [],
+          ordenPrioridades: ['NIVEL MAS BAJO'],
+        }
+      }
+    ]
 
   function closeSaveDialog() {
     if (saveDialog.isSaving) return
@@ -654,6 +637,7 @@ export default function Plan() {
     if (!seleccion || activeIndex === null) return;
     setLoading(true);
     try {
+      const activeVariant = variants[activeIndex];
       const payload = {
           rut,
           codCarrera: seleccion.codCarrera,
@@ -665,7 +649,6 @@ export default function Plan() {
           ordenPrioridades: activeVariant.reglas.ordenPrioridades,
           maxOptions: 5,
       }
-      const activeVariant = variants[activeIndex];
       const res = await apiPost<{ opciones: ProjectionResult[] }>('/proyecciones/generar-opciones',
         payload,
         { timeoutMs: 7000 }

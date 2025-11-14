@@ -32,13 +32,7 @@ describe('ProjectionService', () => {
       },
     ];
 
-    const res = ProjectionService.build({
-      malla, avance, topeCreditos: 14,
-      prioritarios: [],
-      maximizarCreditos: false,
-      priorizarReprobados: false,
-      ordenPrioridades: []
-    });
+    const res = ProjectionService.build({ malla, avance, topeCreditos: 14 });
     // B reprobado debe ir primero
     expect(res.seleccion[0].codigo).toBe('B');
     // C requiere A y A esta aprobado, puede entrar

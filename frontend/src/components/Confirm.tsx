@@ -29,14 +29,14 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/30" onClick={() => close(false)} />
-          <div className="relative bg-white rounded shadow-lg w-full max-w-md p-5">
-            <h3 className="text-lg font-semibold">{opts.title || 'Confirmar'}</h3>
-            {opts.description && <p className="mt-2 text-sm text-gray-700">{opts.description}</p>}
+          <div className="relative rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800 w-full max-w-md p-5">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-white">{opts.title || 'Confirmar'}</h3>
+            {opts.description && <p className="mt-2 text-sm text-gray-700 dark:text-white">{opts.description}</p>}
             <div className="mt-4 flex justify-end gap-2">
-              <button className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200" onClick={() => close(false)}>
+              <button className="min-w-10 px-1 py-2 rounded bg-transparent text-teal-700 hover:bg-teal-50 dark:text-teal-500 dark:hover:bg-teal-900/30 transition" onClick={() => close(false)}>
                 {opts.cancelText || 'Cancelar'}
               </button>
-              <button className="btn" onClick={() => close(true)}>{opts.okText || 'Aceptar'}</button>
+              <button className="btn ml-2 min-w-10 px-1 py-2 rounded text-white bg-teal-600 hover:bg-teal-700 transition" onClick={() => close(true)}>{opts.okText || 'Aceptar'}</button>
             </div>
           </div>
         </div>

@@ -708,7 +708,7 @@ export default function Plan() {
                   <div className="mt-2 flex items-start gap-2">
                     <input
                       type="number"
-                      min={10}
+                      min={12}
                       max={30}
                       value={tope}
                       onChange={(e) => setTope(Number(e.target.value))}

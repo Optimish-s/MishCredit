@@ -3,6 +3,7 @@ import type { Course } from '../entities/course.entity';
 import { ProjectionInput, ProjectionResult, ProjectionCourse } from '../entities/projection.entity';
 
 export class ProjectionService {
+  
   static build(input: ProjectionInput): ProjectionResult {
     const { malla, avance, topeCreditos, ordenPrioridades, prioritarios, priorizarReprobados, maximizarCreditos } = input;
 
@@ -60,7 +61,7 @@ export class ProjectionService {
       totalCreditos,
       reglas: {
         topeCreditos: tope,
-        verificaPrereq: true,
+        // verificaPrereq: true,
         priorizarReprobados,
         maximizarCreditos,
         prioritarios,
@@ -69,7 +70,7 @@ export class ProjectionService {
     };
   }
   
-/*
+
   static buildOptions(input: ProjectionInput, maxOptions): ProjectionResult[] {
     const { malla, avance, topeCreditos, ordenPrioridades, prioritarios, priorizarReprobados, maximizarCreditos } = input;
     
@@ -92,77 +93,140 @@ export class ProjectionService {
     // --- Keep only courses that can be taken (passed prereqs or reprobado) ---
     const disponibles = pendientes.filter(
       (c) => reprobados.has(c.codigo) || ProjectionService.hasPrereqs(c, aprobados),
-    )
-        .sort((a, b) => {
-        if (a._rank !== b._rank) return a._rank - b._rank;
-        if (a.nivel !== b.nivel) return a.nivel - b.nivel;
-        return b.creditos - a.creditos;
-      });
+    );
 
-    // generar variantes saltando uno a uno de la base
-    for (let i = 0; i < base.seleccion.length && opciones.length < maxOptions; i++) {
-      const skipCode = base.seleccion[i].codigo;
-      let total = 0;
-      const pick: ProjectionCourse[] = [];
-      for (const c of candidatos) {
-        if (c.codigo === skipCode) continue;
-        if (total + c.creditos <= tope) {
-          const { _rank, ...rest } = c as ProjectionCourse & { _rank?: number };
-          pick.push(rest as ProjectionCourse);
-          total += c.creditos;
-        }
-        if (total >= tope) break;
-      }
-      // evitar duplicados respecto a base
-      const same =
-        pick.length === base.seleccion.length &&
-        pick.every((p, idx) => p.codigo === base.seleccion[idx].codigo);
-      if (!same && pick.length > 0) {
-        opciones.push({
-          seleccion: pick,
-          totalCreditos: total,
-          reglas: base.reglas,
-        });
-      }
-    }
+    // --- Compute fields for ordering ---
+    const cursos: (ProjectionCourse & {
+      _isReprob: boolean;
+      _isPrio: boolean;
+    })[] = disponibles.map((c) => ({
+      codigo: c.codigo,
+      asignatura: c.asignatura,
+      creditos: c.creditos,
+      nivel: c.nivel,
+      motivo: reprobados.has(c.codigo) ? 'REPROBADO' : 'PENDIENTE',
+      _isReprob: reprobados.has(c.codigo),
+      _isPrio: prios.has(c.codigo),
+    }));
 
-    // generar variantes forzando incluir cursos prioritarios si no quedaron en base
-    const prios = new Set<string>((input.prioritarios || []).filter(Boolean));
-    for (const code of prios) {
-      if (opciones.length >= maxOptions) break;
-      const inBase = base.seleccion.some((s) => s.codigo === code);
-      const cand = candidatos.find((c) => c.codigo === code);
-      if (inBase || !cand) continue;
-      let total = 0;
-      const pick: ProjectionCourse[] = [];
-      // incluir prioritario primero
-      if (cand.creditos > tope) continue;
-      const { _rank: _r1, ...restP } = cand as ProjectionCourse & { _rank?: number };
-      pick.push(restP as ProjectionCourse);
-      total += cand.creditos;
-      for (const c of candidatos) {
-        if (c.codigo === code) continue;
-        if (total + c.creditos <= tope) {
-          const { _rank, ...rest } = c as ProjectionCourse & { _rank?: number };
-          pick.push(rest as ProjectionCourse);
-          total += c.creditos;
-        }
-        if (total >= tope) break;
-      }
-      
-      const dup = opciones.some(
-        (opt) =>
-          opt.seleccion.length === pick.length &&
-          opt.seleccion.every((p, idx) => p.codigo === pick[idx].codigo),
+    // --- Sort dynamically using ordenPrioridades ---
+    const order = ordenPrioridades || [];
+    cursos.sort((a, b) => ProjectionService.compareByTags(a, b, order));
+
+    // --- Generate multiple best projections ---
+    const options: ProjectionResult[] = [];
+
+    // --- Select courses ---
+    let seleccion: ProjectionCourse[] = [];
+    let totalCreditos = 0;
+
+    if (maximizarCreditos) {
+    // 1. Generate the first (optimal) selection
+      ({ seleccion, totalCreditos } = ProjectionService.pickCoursesMaximizedCredits(cursos, tope));
+
+      options.push(
+        ProjectionService.makeProjectionResult(
+          seleccion,
+          totalCreditos,
+          tope,
+          priorizarReprobados,
+          maximizarCreditos,
+          prioritarios,
+          order,
+        ),
       );
-      if (!dup) {
-        opciones.push({ seleccion: pick, totalCreditos: total, reglas: base.reglas });
+    // 2. Generate next lexicographically smaller (maxOptions - 1) alternatives
+      let previousIndices = ProjectionService.getIndicesFromSelection(seleccion, cursos);
+      for (let i = 1; i < maxOptions; i++) {
+        const nextIndices = ProjectionService.nextSmallerCombination(previousIndices, cursos, tope);
+        if (!nextIndices) break;
+
+        const nextSeleccion = nextIndices.map((idx) => {
+          const { _isReprob, _isPrio, ...rest } = cursos[idx];
+          return rest;
+        });
+
+        const nextTotal = nextSeleccion.reduce((s, c) => s + c.creditos, 0);
+
+        options.push(
+          ProjectionService.makeProjectionResult(
+            nextSeleccion,
+            nextTotal,
+            tope,
+            priorizarReprobados,
+            maximizarCreditos,
+            prioritarios,
+            order,
+          ),
+        );
+
+        previousIndices = nextIndices;
       }
+    } else {
+    // --- 1. Generate first projection (greedy fill until cap) ---
+      ({ seleccion, totalCreditos } = ProjectionService.pickCoursesUntilCap(cursos, tope));
+      
+      options.push(
+        ProjectionService.makeProjectionResult(
+          seleccion,
+          totalCreditos,
+          tope,
+          priorizarReprobados,
+          maximizarCreditos,
+          prioritarios,
+          order,
+        ),
+      );
+
+    // --- Build next lexicographically smaller combos ---
+      let indices = ProjectionService.getIndicesFromSelection(seleccion, cursos);
+      const k = indices.length;
+      const n = cursos.length;
+
+      for (let i = 1; i < maxOptions; i++) {
+        const nextIndices = ProjectionService.nextSmallerCombinationSameSize(indices, n);
+        if (!nextIndices) break;
+
+        // Try to fill after last one
+        const filledIndices = [...nextIndices];
+        let total = filledIndices.reduce((s, idx) => s + cursos[idx].creditos, 0);
+
+        for (let j = filledIndices[filledIndices.length - 1] + 1; j < n; j++) {
+          const c = cursos[j];
+          if (total + c.creditos <= tope) {
+            filledIndices.push(j);
+            total += c.creditos;
+          } else break;
+        }
+
+        // Skip if exceeds credit cap
+        if (total > tope) continue;
+
+        const nextSeleccion = filledIndices.map((idx) => {
+          const { _isReprob, _isPrio, ...rest } = cursos[idx];
+          return rest;
+        });
+
+        options.push(
+          ProjectionService.makeProjectionResult(
+            nextSeleccion,
+            total,
+            tope,
+            priorizarReprobados,
+            maximizarCreditos,
+            prioritarios,
+            order,
+          ),
+        );
+
+        indices = nextIndices;
+      }
+
     }
 
-    return opciones;
+    return options;
   }
-*/  
+
 
   // --- Pick courses until credit limit ---
   private static pickCoursesUntilCap(
@@ -182,6 +246,22 @@ export class ProjectionService {
     }
 
     return { seleccion, totalCreditos };
+  }
+
+  // --- Find next lexicographically smaller combination of same size ---
+  private static nextSmallerCombinationSameSize(
+    indices: number[],
+    n: number,
+  ): number[] | null {
+    const k = indices.length;
+    const next = [...indices];
+    let i = k - 1;
+    while (i >= 0 && next[i] === i + (n - k)) i--;
+    if (i < 0) return null; // no more combos
+
+    next[i]++;
+    for (let j = i + 1; j < k; j++) next[j] = next[j - 1] + 1;
+    return next;
   }
 
   // --- Pick courses aiming for exact credit limit ---
@@ -234,6 +314,35 @@ export class ProjectionService {
     return { seleccion, totalCreditos: bestTotal };
   }
 
+  // --- Find next lexicographically smaller combination under credit limit ---
+  private static nextSmallerCombination(
+    indices: number[],
+    cursos: (ProjectionCourse & { _isReprob: boolean; _isPrio: boolean })[],
+    tope: number,
+  ): number[] | null {
+    const n = cursos.length;
+    const k = indices.length;
+    const currentTotal = indices.reduce((s, i) => s + cursos[i].creditos, 0);
+
+    // Generate next lexicographically smaller combination
+    const next = [...indices];
+    let i = k - 1;
+    while (i >= 0 && next[i] === i + (n - k)) i--;
+    if (i < 0) return null; // no more combinations
+
+    next[i]++;
+    for (let j = i + 1; j < k; j++) next[j] = next[j - 1] + 1;
+
+    // Recalculate credits
+    const total = next.reduce((s, idx) => s + cursos[idx].creditos, 0);
+
+    // if it exceeds tope, find best smaller one recursively
+    if (total > tope) return ProjectionService.nextSmallerCombination(next, cursos, tope);
+
+    return next;
+  }
+
+
 // --- Helpers ---
 
   // --- Choose lexicographically "earlier" course combination ---
@@ -277,4 +386,36 @@ export class ProjectionService {
     // fallback: sort by level
     return a.nivel - b.nivel;
   }
+
+  private static makeProjectionResult(
+    seleccion: ProjectionCourse[],
+    totalCreditos: number,
+    tope: number,
+    priorizarReprobados: boolean,
+    maximizarCreditos: boolean,
+    prioritarios: string[] | undefined,
+    ordenPrioridades: string[],
+  ): ProjectionResult {
+    return {
+      seleccion,
+      totalCreditos,
+      reglas: {
+        topeCreditos: tope,
+        priorizarReprobados,
+        maximizarCreditos,
+        prioritarios,
+        ordenPrioridades,
+      },
+    };
+  }
+
+  private static getIndicesFromSelection(
+    seleccion: ProjectionCourse[],
+    cursos: (ProjectionCourse & { _isReprob: boolean; _isPrio: boolean })[],
+  ): number[] {
+    return seleccion
+      .map((s) => cursos.findIndex((c) => c.codigo === s.codigo))
+      .filter((i) => i >= 0);
+  }
+
 }

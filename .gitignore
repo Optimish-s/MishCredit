@@ -142,3 +142,6 @@ vite.config.ts.timestamp-*
 
 # Prettier files
 .prettierignore
+
+# Notes
+note.txt

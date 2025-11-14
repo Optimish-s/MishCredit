@@ -8,19 +8,16 @@ services:
     networks:
       - mishcredit_net
   backend:
-    build:
+    build:  
       context: ./backend
     env_file:
       - ./backend/.env
-    environment:
-      MONGO_URI: mongodb://mongo:27017/planificador
     ports:
       - "3000:3000"
     depends_on:
       - mongo
     networks:
       - mishcredit_net
-
   frontend:
     build:
       context: ./frontend

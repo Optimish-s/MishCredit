@@ -1,6 +1,7 @@
 import { HttpModule } from '@nestjs/axios';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
+import { HttpModule } from '@nestjs/axios';
 
 describe('AuthService', () => {
   let service: AuthService;

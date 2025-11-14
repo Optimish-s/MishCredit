@@ -2,6 +2,16 @@ import { HttpModule } from '@nestjs/axios';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MallaBackupRepository } from '../db/bkp/malla-backup.repository';
 import { MallaService } from './malla.service';
+import { MallaBackupRepository } from '../db/bkp/malla-backup.repository';
+import { HttpModule } from '@nestjs/axios';
+ 
+class MallaDto {
+  codigo: string;
+  asignatura: string;
+  creditos: number;
+  nivel: number;
+  prereq: string;
+} 
 
 describe('MallaService', () => {
   let service: MallaService;
@@ -26,6 +36,7 @@ describe('MallaService', () => {
 
   it('service should be defined', () => {
     expect(service).toBeDefined();
+
   });
 
   it('getMalla usa stub en tests', async () => {

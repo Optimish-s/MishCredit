@@ -115,9 +115,9 @@ export class GenerateProjectionOptionsUseCase {
     };
 
     // --- Ejecutar lógica de proyección ---
-    // return ProjectionService.buildOptions(input, params.maxOptions ?? 5,);
+    const opciones: ProjectionResult[] = ProjectionService.buildOptions(input, params.maxOptions ?? 5);
 
-    // --- Placeholder for return ---
+    /*/ --- Placeholder for return ---
     const opciones: ProjectionResult[] = [
       {
         seleccion: [
@@ -126,14 +126,14 @@ export class GenerateProjectionOptionsUseCase {
         totalCreditos: 6,
         reglas: {
           topeCreditos: params.topeCreditos,
-          verificaPrereq: true,
+          // verificaPrereq: true,
           priorizarReprobados: params.priorizarReprobados ?? false,
           maximizarCreditos: params.maximizarCreditos ?? false,
           prioritarios: params.prioritarios ?? [],
           ordenPrioridades: params.ordenPrioridades ?? ['NIVEL MAS BAJO'],
         },
       },
-    ];
+    ]; */
 
     return { opciones };
 

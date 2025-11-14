@@ -2,8 +2,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AvanceBackupRepository } from '../db/bkp/avance-backup.repository';
 import { AvanceService } from './avance.service';
-import { AvanceBackupRepository } from '../db/bkp/avance-backup.repository';
-import { HttpModule } from '@nestjs/axios';
+
 describe('AvanceService', () => {
   let service: AvanceService;
   let mockAvanceBackupRepository: jest.Mocked<AvanceBackupRepository>;

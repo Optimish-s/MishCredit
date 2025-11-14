@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { AxiosResponse, AxiosError } from 'axios';
 import { Observable, firstValueFrom } from 'rxjs';
-import { AvanceBackupRepository } from 'src/db/bkp/avance-backup.repository';
+import { AvanceBackupRepository } from '../db/bkp/avance-backup.repository';
 const useStubs: boolean = process.env.USE_STUBS === 'true';
 
 const avanceStub = [

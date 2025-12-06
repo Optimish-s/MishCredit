@@ -15,6 +15,9 @@ import { SortableItem } from '../components/ui/SortableItem'
 import { closestCenter, DndContext } from '@dnd-kit/core'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { PlanConfigPanel } from '../components/plan/PlanConfigPanel'
+import { PrioritariosPicker } from '../components/plan/PrioritariosPicker'
+import { ProjectionResultsSection } from '../components/plan/ProjectionResultsSection'
 import 'react-range-slider-input/dist/style.css'
 import './styles/range-slider.css'
 
@@ -690,7 +693,7 @@ export default function Plan() {
       </header>
 
       {/* Contenedor principal: parámetros + sidebar condicional de etiquetas */}
-      {(() => {
+      {false && (() => {
         const showSidebar = etiquetasExtras.length > 0
         return (
           <section className={`grid gap-3 ${showSidebar ? 'grid-cols-5' : 'grid-cols-4'}`}>
@@ -858,6 +861,42 @@ export default function Plan() {
           </section>
         )
       })()}
+
+      <PlanConfigPanel
+        tope={tope}
+        onTopeChange={(value) => setTope(value)}
+        creditRange={creditRange}
+        onCreditRangeChange={setCreditRange}
+        maximizarCreditos={maximizarCreditos}
+        onMaximizarCreditosChange={setMaximizarCreditos}
+        priorizarReprobados={priorizarReprobados}
+        onPriorizarReprobadosChange={setPriorizarReprobados}
+        prioritarios={prioritarios}
+        showPicker={showPicker}
+        onOpenPicker={openPicker}
+        onResetPrioritarios={resetPrioritarios}
+        etiquetasBase={etiquetasBase}
+        etiquetasExtras={etiquetasExtras}
+        ordenEtiquetas={ordenEtiquetas}
+        onOrdenEtiquetasChange={setOrdenEtiquetas}
+      />
+
+      <PrioritariosPicker
+        open={showPicker}
+        courses={pickerCourses}
+        pickerDraft={pickerDraft}
+        pickerFilter={pickerFilter}
+        pickerSelected={pickerSelected}
+        onPickerFilterChange={setPickerFilter}
+        onToggleCourse={(codigo, checked) =>
+          setPickerDraft((prev) => ({
+            ...prev,
+            [codigo]: checked,
+          }))
+        }
+        onConfirm={confirmPicker}
+        onCancel={() => setShowPicker(false)}
+      />
 
       {showPicker && (
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">

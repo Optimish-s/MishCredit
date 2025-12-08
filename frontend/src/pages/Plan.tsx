@@ -745,7 +745,7 @@ export default function Plan() {
                         defaultValue={creditRange}
                       />
                       {/* Display the current values only when hovering */}
-                      <div className="absolute bottom-5 left-0 right-0 flex justify-between text-xs font-semibold text-teal-500/60 mt-3.5 mx-0.5
+                      <div className="absolute bottom-5 left-0 right-0 flex justify-between text-xs font-semibold text-teal-700 mt-3.5 mx-0.5
                       opacity-0 group-hover:opacity-100 transition-opacity">
                         <span>{creditRange[0]} SCT</span>
                         <span>{creditRange[1]} SCT</span>

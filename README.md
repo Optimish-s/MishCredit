@@ -1,95 +1,146 @@
-# Planificador UCN (NestJS + React + Mongo)
+# MishCredit - Planificador UCN
 
 ## Tecnologias
 
-- Backend: NestJS + Mongoose + Axios + Swagger opcional + Helmet + rate limit
+- Backend: NestJS (TypeScript) + Mongoose + Axios + Swagger opcional + Helmet + rate limit
 - Frontend: React + Vite + Tailwind CSS
-- Base de datos: MongoDB
-- Integraciones: APIs UCN (Login, Malla, Avance) con stubs y respaldos CSV/JSON
+- Base de datos: MongoDB 7
+- Integraciones: APIs UCN (login, malla, avance) con stubs y respaldos CSV/JSON
 
-## Requisitos
+## Arquitectura
 
-- Node.js 20+
-- MongoDB 7+ (local o contenedor Docker)
+- `backend/`: servicio HTTP REST en NestJS
+- `frontend/`: SPA en React servida por Nginx en produccion (imagen Docker)
+- `docker-compose.yml`: orquesta MongoDB, backend y frontend en una sola red
 
-## Puesta en marcha rapida
+## Puesta en marcha con Docker (recomendado)
 
-1. Clona el repo y entra a la carpeta `yio Malla proyecto`.
-2. Instala dependencias de la raiz (necesarias para los scripts del monorepo): `npm install`.
-3. Instala dependencias del backend y del frontend en un solo paso: `npm run bootstrap`.
-4. Copia los archivos de entorno base (solo lo hace si faltan): `npm run setup`.
-5. Ajusta los valores generados en `backend/.env` y `frontend/.env` si lo necesitas.
-6. Asegura que MongoDB este corriendo (`mongodb://localhost:27017/planificador` por defecto) o usa Docker (`docker compose up --build`).
-7. Levanta los servicios:
-   - Backend: `npm run dev:backend`
-   - Frontend: `npm run dev:frontend`
-   - Ambos al mismo tiempo: `npm run all:dev`
+1. Copia `backend/.env.example` a `backend/.env` y ajusta al menos:
+   - `MONGO_URI=mongodb://mongo:27017/planificador`
+   - `USE_STUBS=true` si quieres probar sin conectarte a UCN
+2. Copia `frontend/.env.example` a `frontend/.env` y ajusta:
+   - `VITE_API_BASE=http://localhost:3000/api`
+3. Desde la raiz del repo ejecuta:
+   - `docker compose up --build`
+4. Accede a:
+   - Frontend: `http://localhost:8080`
+   - Backend: `http://localhost:3000`
+   - Swagger (si `SWAGGER_ENABLED=true` en backend): `http://localhost:3000/api/docs`
 
-> Tip: el backend expone Swagger en `http://localhost:3000/api/docs` cuando `SWAGGER_ENABLED=true`.
-
-## Configuracion de entorno
+## Desarrollo local sin Docker
 
 ### Backend
 
-`backend/.env.example` ya viene con valores pensados para desarrollo offline (`USE_STUBS=true`). Asegurate de definir:
+```bash
+cd backend
+cp .env.example .env   # ajusta valores
+npm install
+npm run start:dev
+```
 
-- `MONGO_URI`: cadena de conexion (por defecto local).
-- `ALLOWED_ORIGINS`: agrega URLs adicionales de frontends si Vite usa otro puerto.
-- `ADMIN_API_KEY`: clave para los endpoints protegidos de respaldo y oferta.
-- `USE_BACKUP_FALLBACK=true` si quieres servir respaldos cuando las APIs UCN fallen.
+El backend se levanta en `http://localhost:3000`.
 
 ### Frontend
 
-`frontend/.env.example` apunta al backend local (`VITE_API_BASE=http://localhost:3000/api`). Ajusta si cambiaste puerto o URL.
+```bash
+cd frontend
+cp .env.example .env   # ajusta VITE_API_BASE
+npm install
+npm run dev
+```
 
-## Ejecutar con Docker
+El frontend se levanta en `http://localhost:5173`.
 
-- `docker compose up --build`
-- Frontend: `http://localhost:8080`
-- Backend: `http://localhost:3000`
+## Funcionalidades principales
 
-## Uso (UI)
+### Login y seleccion de carrera
 
-1. **Login demo**
-   - Ingresa correo y password (ver credenciales demo). Se listan las carreras/catalogos asociados.
-   - "Olvide mi contrasena" valida el RUT y devuelve un mensaje (no envia correos reales).
-   - Acceso administrador disponible desde la misma pantalla de login.
-2. **Plan (/plan)**
-   - Define tope de creditos y genera la seleccion principal (prioriza reprobados, luego atrasados segun nivel objetivo y luego prioritarios, respetando prerrequisitos).
-   - Desde la vista puedes marcar prioritarios y generar opciones alternativas.
-3. **Mis proyecciones (/proyecciones)**
-   - Lista proyecciones guardadas, expande la malla, marca favoritas, renombra o elimina.
-4. **Demanda (/demanda)**
-   - Muestra demanda agregada por codigo o por NRC (solo desde favoritas).
-5. **Admin / oferta**
-   - En `/admin` ingresa la cabecera `X-ADMIN-KEY` configurada para cargar oferta CSV en `/oferta`.
+- Pantalla de login UCN por rut y correo de prueba
+- Carga las carreras y catalogos asociados al estudiante
+- Guarda la seleccion actual en un store global para reusar en todas las paginas
 
-## Credenciales demo
+### Plan de proyeccion (`/plan`)
+
+- Permite definir:
+  - Tope de creditos totales
+  - Rango de creditos por ramo
+  - Flags de "maximizar creditos" y "priorizar reprobados"
+  - Lista de ramos prioritarios seleccionados desde la malla
+- Genera una seleccion principal respetando prerrequisitos
+- Permite generar variantes adicionales a partir de una seleccion ya calculada
+- Cada variante se puede guardar como proyeccion normal o favorita
+- Maneja stubs locales si el backend no responde (modo demo)
+
+### Mis proyecciones (`/proyecciones`)
+
+- Lista todas las proyecciones guardadas para el rut actual
+- Filtro por carrera y catalogo sincronizado con la seleccion del header
+- Muestra por cada proyeccion:
+  - Total de creditos
+  - Numero de ramos
+  - Numero de ramos reprobados incluidos
+  - Rango y promedio de niveles
+- Permite:
+  - Editar nombre
+  - Marcar o cambiar favorita
+  - Eliminar una sola proyeccion
+  - Eliminar todas las proyecciones visibles (segun filtro) con confirmacion y opcion de conservar la favorita
+
+### Demanda agregada (`/demanda`)
+
+- Consulta demanda agregada a partir de las proyecciones existentes
+- Filtros:
+  - Modo favoritas o total
+  - Agrupar por codigo de curso o por NRC
+  - Filtro opcional de carrera (`codCarrera`), manteniendo el comportamiento global si no se especifica
+- Muestra:
+  - Top de claves con mayor demanda en forma de grafico de barras
+  - Tabla con inscritos por curso o NRC
+- Mensajes claros cuando no hay registros para la combinacion de filtros actual
+
+### Admin y oferta
+
+- Ruta `/admin` para ingresar la cabecera `X-ADMIN-KEY` que se usa contra el backend
+- Ruta `/oferta` para cargar CSV de oferta academica y consultarla
+- Estos endpoints se protegen con `ADMIN_API_KEY` en backend
+
+## Credenciales de prueba
 
 - Estudiante 1: rut `333333333`, email `juan@example.com`, password `1234` (ICCI 201610)
 - Estudiante 2: rut `222222222`, email `maria@example.com`, password `abcd` (ITI 202410)
 - Estudiante 3: rut `111111111`, email `ximena@example.com`, password `qwerty` (ICCI 201610)
 
-## API destacado
+## Endpoints utiles
 
 - Health: `GET /api/health`
-- Auth (demo): `POST /api/auth/login`, `POST /api/auth/forgot`
-- UCN (proxy): `GET /api/ucn/malla/:cod/:catalogo`, `GET /api/ucn/avance?rut&codcarrera`
-- Proyecciones: generar / generar-opciones / guardar / favorita / renombrar / borrar / demanda
-- Admin: carga de oferta CSV y respaldos UCN (requiere `X-ADMIN-KEY`)
+- Auth demo: `POST /api/auth/login`, `POST /api/auth/forgot`
+- UCN proxy:
+  - `GET /api/ucn/malla/:codCarrera/:catalogo`
+  - `GET /api/ucn/avance?rut=&codCarrera=`
+- Proyecciones:
+  - `POST /api/proyecciones/generar`
+  - `POST /api/proyecciones/generar-opciones`
+  - `POST /api/proyecciones/guardar-directo`
+  - `PATCH /api/proyecciones/favorita/:id`
+  - `PATCH /api/proyecciones/:id/nombre`
+  - `DELETE /api/proyecciones/:id`
+  - `GET /api/proyecciones/mias`
+  - `GET /api/proyecciones/demanda/agregada`
+- Admin:
+  - Carga de oferta y respaldos UCN (requiere `X-ADMIN-KEY` y `ADMIN_API_KEY`)
 
-## Comandos para resolver problemas comunes
+## Problemas comunes
 
-- Utilizar comando:
-  copy backend\.env.example backend\.env
-- Cambiar el .env de backend a USE_STUBS=true
-- Levantar de nuevo:
-  docker compose down
-  docker compose up --build
+- Si la integracion con UCN no esta disponible:
+  - En `backend/.env` usar `USE_STUBS=true`
+- Si hay problemas con datos antiguos:
+  - Detener contenedores: `docker compose down`
+  - Volver a levantar: `docker compose up --build`
+- Para correr tests de backend:
 
-## Para test:
+```bash
+cd backend
+npm install
+npm test
+```
 
-- Utilizar comando
-  cd backend
-  npm install
-  npm test

@@ -3,7 +3,6 @@ import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { AxiosError, AxiosResponse } from 'axios';
 import { Observable, firstValueFrom } from 'rxjs';
 import { MallaBackupRepository } from '../db/bkp/malla-backup.repository';
-const useStubs: boolean = process.env.USE_STUBS === 'true';
 type JsonUnknown = unknown;
 const mallaStub = [
   {
@@ -23,14 +22,17 @@ const mallaStub = [
 ] as const;
 @Injectable()
 export class MallaService {
-
+  
   private readonly logger = new Logger(MallaService.name);
   constructor(
     private readonly http: HttpService,
     private readonly mallaBackup: MallaBackupRepository,
   ) { }
-
+  
   async getMalla(cod: string, catalogo: string): Promise<JsonUnknown> {
+    const useStubs: boolean = process.env.USE_STUBS === 'true';
+
+    
     if (useStubs) {
       this.logger.warn(`consultado malla stubs ${cod} ${catalogo}`);
       return mallaStub as JsonUnknown;

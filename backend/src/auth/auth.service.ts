@@ -3,7 +3,6 @@ import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/
 import { AxiosError, AxiosResponse } from 'axios';
 import { firstValueFrom, Observable } from 'rxjs';
 
-const useStubs: boolean = process.env.USE_STUBS === 'true';
 
 type Carrera = { codigo: string; nombre: string; catalogo: string };
 type User = { rut: string; email: string; password: string; carreras: Carrera[] };
@@ -58,6 +57,7 @@ export class AuthService {
         }
     }
     forgot(body: { rut?: string; email?: string }) {
+        const useStubs: boolean = process.env.USE_STUBS === 'true';
         if (useStubs) {
             const user = demoUsers.find((u) => u.rut === body.rut && u.email.toLowerCase() === body.email);
             if (!user) throw new BadRequestException('rut o email no coinciden');
@@ -69,6 +69,7 @@ export class AuthService {
     }
 
     async login(email: string, password: string): Promise<LoginResponse> {
+        const useStubs: boolean = process.env.USE_STUBS === 'true';
         if (useStubs) {
             const user = demoUsers.find((u) => (u.email === email || u.rut === email) && u.password === password);
             if (!user) throw new BadRequestException('credenciales invalidas');

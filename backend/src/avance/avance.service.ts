@@ -3,18 +3,17 @@ import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { AxiosError, AxiosResponse } from 'axios';
 import { Observable, firstValueFrom } from 'rxjs';
 import { AvanceBackupRepository } from '../db/bkp/avance-backup.repository';
-const useStubs: boolean = process.env.USE_STUBS === 'true';
 
-const avanceStub = [
-  {
-    nrc: '21943',
-    period: '201610',
-    student: '11188222333',
-    course: 'ECIN-00704',
-    excluded: false,
-    inscriptionType: 'REGULAR',
-    status: 'APROBADO',
-  },
+export const avanceStub = [
+    {
+        nrc: '21943',
+        period: '201610',
+        student: '11188222333',
+        course: 'ECIN-00704',
+        excluded: false,
+        inscriptionType: 'REGULAR',
+        status: 'APROBADO',
+    },
 ] as const;
 
 type JsonUnknown = unknown;
@@ -28,6 +27,7 @@ export class AvanceService {
     ) { }
 
     async getAvance(rut: string, codCarrera: string): Promise<JsonUnknown> {
+        const useStubs: boolean = process.env.USE_STUBS === 'true';
         if (useStubs) {
             this.logger.warn(`Usando avance stubs `);
             return avanceStub as JsonUnknown;

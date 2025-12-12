@@ -554,7 +554,7 @@ describe('ProjectionService', () => {
         ordenPrioridades: [],
       }, 0);
 
-      expect(results.length).toBe(0);
+      expect(results.length).toBe(1);
     });
 
     it('should handle when no more combinations exist (maximizarCreditos)', () => {

@@ -348,7 +348,11 @@ export default function Demanda() {
           {datosOrdenados.length === 0 ? (
             <EmptyState
               title="Sin informacion disponible"
-              description="No hay suficientes proyecciones para calcular la demanda con los filtros seleccionados."
+              description={
+                filtroCodCarrera
+                  ? `No hay proyecciones suficientes para la carrera ${filtroCodCarrera} con los filtros seleccionados.`
+                  : 'No hay suficientes proyecciones para calcular la demanda con los filtros seleccionados.'
+              }
               actionLabel="Reintentar"
               onAction={() => {
                 rememberScroll();
@@ -470,4 +474,3 @@ export default function Demanda() {
     </div>
   );
 }
-

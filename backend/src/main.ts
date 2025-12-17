@@ -8,6 +8,7 @@ import { json, urlencoded } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({
@@ -48,6 +49,7 @@ async function bootstrap() {
       legacyHeaders: false,
     }),
   );
+
 
   // swagger solo en dev o si SWAGGER_ENABLED=true
   if (

@@ -36,12 +36,30 @@ function useThemeToggle() {
   return { isDark, toggle: () => setIsDark((prev) => !prev) };
 }
 
+function useDyslexiaToggle() {
+  const [isDyslexia, setIsDyslexia] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = localStorage.getItem('dyslexia-mode');
+    return saved === 'true';
+  });
+
+  useLayoutEffect(() => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    root.classList.toggle('dyslexia-friendly', isDyslexia);
+    localStorage.setItem('dyslexia-mode', isDyslexia ? 'true' : 'false');
+  }, [isDyslexia]);
+
+  return { isDyslexia, toggle: () => setIsDyslexia((prev) => !prev) };
+}
+
 export default function DashboardLayout() {
   const { pathname } = useLocation();
   const nav = useNavigate();
   const confirm = useConfirm();
   const { rut, setRut, seleccion, setSeleccion, carreras, setCarreras, adminKey, setAdminKey } = useApp();
   const { isDark, toggle } = useThemeToggle();
+  const { isDyslexia, toggle: toggleDyslexia } = useDyslexiaToggle();
 
   useEffect(() => {
     if (!rut) nav('/', { replace: true });
@@ -166,6 +184,25 @@ export default function DashboardLayout() {
                 ))}
               </select>
             )}
+
+            {/* DISLEXIA TOGGLE */}
+            <button
+              onClick={toggleDyslexia}
+              className="rounded-full border border-slate-200 bg-white p-1.5 text-slate-700 transition hover:bg-purple-600/20 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-purple-600/20 dark:text-slate-100"
+              aria-pressed={isDyslexia}
+              title={isDyslexia ? "Desactivar modo dislexia" : "Activar modo dislexia"}
+            >
+              {isDyslexia ? (
+                <svg className="h-6 w-6 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm2 3v2h2V7H7zm0 4v2h2v-2H7zm0 4v2h2v-2H7zm4-8v2h6V7h-6zm0 4v2h6v-2h-6zm0 4v2h6v-2h-6z"/>
+                </svg>
+              ) : (
+                <svg className="h-6 w-6 text-slate-600 dark:text-slate-300" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm1 2v12h12V6H6zm2 2h8v2H8V8zm0 4h8v2H8v-2zm0 4h5v2H8v-2z"/>
+                </svg>
+              )}
+            </button>
+
             <button
               onClick={toggle}
               className="rounded-full border border-slate-200 bg-white p-1 text-slate-700 transition hover:bg-sky-600/20 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-sky-600/20 dark:text-slate-100"

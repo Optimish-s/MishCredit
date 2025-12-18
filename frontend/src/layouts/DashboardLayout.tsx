@@ -151,7 +151,7 @@ export default function DashboardLayout() {
           "md:translate-x-0", // always visible on md+
         ].join(" ")}
       >
-      <div className="px-1 py-1 h-4">{menuToggleButton(FiX)}</div>
+      {/* <div className="px-1 py-1 h-4">{menuToggleButton(FiX)}</div> */}
 
         {/* --- Header with RUT and Carrera --- */}
         <div className="flex h-16 items-center gap-3 border-b border-white/10 px-4 z-10">
@@ -166,6 +166,7 @@ export default function DashboardLayout() {
                 : "Selecciona carrera"}
             </p>
           </div>
+          <div className="ml-auto">{menuToggleButton(FiX)}</div>
         </div>
 
         {/* --- Content area below header --- */}

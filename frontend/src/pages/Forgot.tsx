@@ -47,7 +47,7 @@ export default function Forgot() {
           </p>
         </div>
 
-        <Card className="border-white/10 bg-white/10 backdrop-blur">
+        <Card className="border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <CardHeader
             title="Validacion de identidad"
             description="Usa el rut sin puntos y con digito verificador o el correo registrado."
@@ -73,9 +73,9 @@ export default function Forgot() {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10 bg-white/5 backdrop-blur">
+        <Card className="border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <CardHeader title="Ayuda rapida" />
-          <CardContent className="text-sm text-slate-200/90">
+          <CardContent className="text-sm text-slate-500 dark:text-slate-200">
             <ul className="list-disc space-y-1 pl-5">
               <li>La validacion usa los respaldos locales si el modo stubs sigue activo.</li>
               <li>No se envian correos reales; se muestra un mensaje de exito cuando los datos coinciden.</li>
